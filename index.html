@@ -899,7 +899,7 @@ window.ACHIEVEMENT_DATA={"하이캡":{"target":508720,"actual":490768,"unit":"�
   graphObserver.observe(trendBox, {childList:true,subtree:true});
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
   const supportPage = document.getElementById('support');
   const oldTable = supportPage?.querySelector('.manager-real-table');
   const summary = window.MANAGER_SUMMARY || [];
@@ -975,7 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.nav button[data-page="managerDetail"]')?.click();
     document.querySelector(`.manager-detail-tabs button[data-manager="${CSS.escape(row.dataset.supportManager)}"]`)?.click();
   });
-});
+}, 0));
 </script><script defer>document.addEventListener('DOMContentLoaded',()=>{
   if(window.__GYUNGGI_MANAGER_DETAIL_READY__)return;window.__GYUNGGI_MANAGER_DETAIL_READY__=true;
   const page=document.getElementById('managerDetail');if(!page)return;
