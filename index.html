@@ -1580,6 +1580,7 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
   let searchTimer = 0;
   const fmt = v => Math.round(Number(v || 0)).toLocaleString('ko-KR');
   const safe = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const normalizeSearch = v => String(v ?? '').normalize('NFKC').trim().toLocaleLowerCase('ko-KR');
   const statusClass = v => v === '달성' ? 'achieved' : v.includes('추가') ? 'need' : 'miss';
   const sortDefs = [
     ['designDesc','설계건수↓'], ['designAsc','설계건수↑'],
@@ -1591,7 +1592,7 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
       && (type === 'all' || x.targetType.includes(type === 'person' ? '인브릿지' : '주력브릿지'))
       && (status === 'all' || (status === 'achieved' ? x.overallStatus === '달성' : status === 'need'
         ? (x.personStatus.includes('추가') || x.mainStatus.includes('추가')) : x.overallStatus !== '달성'))
-      && (!query || `${x.manager} ${x.branch} ${x.agent} ${x.code}`.toLowerCase().includes(query)));
+      && (!query || normalizeSearch(`${x.manager} ${x.branch} ${x.agent} ${x.code}`).includes(query)));
     const value = x => sort === 'designDesc' || sort === 'designAsc' ? Number(x.designCount || 0)
       : sort === 'personDesc' || sort === 'personAsc' ? Number(x.personSep || 0)
       : sort === 'mainDesc' || sort === 'mainAsc' ? Number(x.mainSep || 0) : Number(x.personAug || 0);
@@ -1659,7 +1660,7 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
     const searchInput = page.querySelector('[data-bridge-search]');
     let composing = false;
     const applySearch = value => {
-      query = value.trim().toLowerCase();
+      query = normalizeSearch(value);
       render();
       const next = page.querySelector('[data-bridge-search]');
       if (next) {
@@ -1672,13 +1673,13 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
     searchInput.oncompositionend = e => {
       composing = false;
       clearTimeout(searchTimer);
-      applySearch(e.target.value);
+      const value = e.target.value;
+      searchTimer = setTimeout(() => applySearch(value), 0);
     };
     searchInput.oninput = e => {
-      if (composing || e.isComposing) return;
       clearTimeout(searchTimer);
       const value = e.target.value;
-      searchTimer = setTimeout(() => applySearch(value), 120);
+      searchTimer = setTimeout(() => applySearch(value), composing || e.isComposing ? 700 : 120);
     };
     const modal = page.querySelector('.bridge-image-modal'); page.querySelector('.bridge-award-open').onclick = () => modal.classList.add('open'); modal.onclick = e => { if (e.target === modal || e.target.tagName === 'BUTTON') modal.classList.remove('open'); };
   }
