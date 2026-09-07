@@ -1577,6 +1577,7 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
   page.id = 'bridge'; page.className = 'page bridge-page'; shell.appendChild(page);
   const rows = window.BRIDGE_DATA || [], managers = [...new Set(rows.map(x => x.manager))];
   let manager = '', type = 'all', status = 'all', query = '', sort = 'designDesc';
+  let searchTimer = 0;
   const fmt = v => Math.round(Number(v || 0)).toLocaleString('ko-KR');
   const safe = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const statusClass = v => v === '달성' ? 'achieved' : v.includes('추가') ? 'need' : 'miss';
@@ -1655,7 +1656,30 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
     page.querySelector('[data-bridge-manager]').onclick = e => { const b = e.target.closest('button[data-value]'); if (b) { manager = b.dataset.value; render(); } };
     page.querySelector('[data-bridge-filter]').onclick = e => { const t = e.target.closest('button[data-type]'), s = e.target.closest('button[data-status]'); if (t) { type = t.dataset.type; status = 'all'; render(); } else if (s) { status = status === s.dataset.status ? 'all' : s.dataset.status; render(); } else if (e.target.closest('.bridge-reset')) { manager = ''; type = 'all'; status = 'all'; query = ''; sort = 'designDesc'; render(); } };
     page.querySelector('[data-bridge-sort]').onclick = e => { const b = e.target.closest('button[data-sort]'); if (b) { sort = b.dataset.sort; render(); } };
-    page.querySelector('[data-bridge-search]').oninput = e => { query = e.target.value.trim().toLowerCase(); const caret = e.target.selectionStart; render(); const next = page.querySelector('[data-bridge-search]'); next.focus(); next.setSelectionRange(caret, caret); };
+    const searchInput = page.querySelector('[data-bridge-search]');
+    let composing = false;
+    const applySearch = value => {
+      query = value.trim().toLowerCase();
+      render();
+      const next = page.querySelector('[data-bridge-search]');
+      if (next) {
+        next.focus();
+        const end = next.value.length;
+        next.setSelectionRange(end, end);
+      }
+    };
+    searchInput.oncompositionstart = () => { composing = true; };
+    searchInput.oncompositionend = e => {
+      composing = false;
+      clearTimeout(searchTimer);
+      applySearch(e.target.value);
+    };
+    searchInput.oninput = e => {
+      if (composing || e.isComposing) return;
+      clearTimeout(searchTimer);
+      const value = e.target.value;
+      searchTimer = setTimeout(() => applySearch(value), 120);
+    };
     const modal = page.querySelector('.bridge-image-modal'); page.querySelector('.bridge-award-open').onclick = () => modal.classList.add('open'); modal.onclick = e => { if (e.target === modal || e.target.tagName === 'BUTTON') modal.classList.remove('open'); };
   }
   button.addEventListener('click', () => { nav.querySelectorAll('button').forEach(x => x.classList.remove('on')); document.querySelectorAll('.page').forEach(x => x.classList.remove('on')); button.classList.add('on'); page.classList.add('on'); document.getElementById('title').textContent = '브릿지 관리'; render(); });
