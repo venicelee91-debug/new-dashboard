@@ -73,7 +73,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .sec-h{display:flex;align-items:center;gap:8px;margin:18px 2px 10px}
 .sec-h h2{margin:0;font-family:var(--f-disp);font-weight:400;font-size:17px;color:var(--navy)}
 .sec-h .chip-n{background:var(--orange);color:#fff;font-family:var(--f-body);font-weight:600;font-size:11px;border-radius:5px;padding:3px 6px}
-.sec-h .hint{margin-left:auto;font-size:11.5px;color:var(--ink3)}
+.sec-h .hint{margin-left:auto;font-size:11.5px;color:var(--ink3);text-align:right}
+.sec-h h2{white-space:nowrap}
+@media (max-width:560px){.sec-h .hint{font-size:10.5px}}
 
 .card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .pad{padding:14px}
@@ -122,8 +124,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .row .rt .v{font-family:var(--f-num);font-weight:600;font-size:15px}
 .row .rt .s{font-size:11px;color:var(--ink3)}
 .chev{color:var(--ink3);flex:0 0 auto}
-.tel{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--greenSoft);color:var(--green);text-decoration:none;border:1px solid transparent}
-.tel svg{width:17px;height:17px}
+.tel{flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--greenSoft);color:var(--green);text-decoration:none;border:1px solid transparent}
+.tel svg{width:13px;height:13px}
 .tel:active{transform:scale(.94)}
 .tel.off{background:var(--soft);color:var(--ink3);border-color:var(--line);pointer-events:none}
 .rank{width:22px;flex:0 0 auto;text-align:center;font-family:var(--f-num);font-weight:600;color:var(--ink3);font-size:15px}
@@ -245,11 +247,36 @@ small.u,.u-s{font-family:var(--f-num);font-size:.6em;font-weight:500;margin-left
 .prof .st div.hl b{color:var(--navy)}
 .lchart{width:100%;height:auto;max-width:100%}
 .kv4 div{flex:1 1 0;min-width:0}
+
+/* 초화면: 기준일 바 (음영 없이) + KPI 행 */
+.datebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:4px 2px 12px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.datebar .d{font-size:17px;font-weight:700;color:var(--ink)}
+.datebar .d b{font-family:var(--f-num);color:var(--navy)}
+.datebar .m{font-size:13.5px;color:var(--ink2)}
+.datebar .m b{font-family:var(--f-num);color:var(--ink);font-weight:700}
+.datebar .tr{flex:1 1 160px;min-width:140px;max-width:320px;margin-left:auto;height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.datebar .tr i{display:block;height:100%;background:var(--navy2);border-radius:6px}
+.krow{padding:14px 16px 12px}
+.krow .kh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.krow .kh .kn{font-size:16px;font-weight:700}
+.krow .kh .kv0{font-family:var(--f-num);font-size:22px;font-weight:700;color:var(--ink)}
+.krow .kh .kv0 small{font-size:12.5px;font-weight:500;color:var(--ink2);margin-left:2px}
+.krow .kh .tag{margin-left:auto;align-self:center}
+.krow .kc{margin:2px -4px 0}
+.krow .ks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px;padding-top:10px;border-top:1px dashed var(--line)}
+.krow .ks div span{display:block;font-size:12px;color:var(--ink2)}
+.krow .ks div b{font-family:var(--f-num);font-size:16px;font-weight:700}
+.krow .ks div.left b{color:var(--red)}
+.krow .ks div.done b{color:var(--green)}
+.krow .kp{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:var(--ink2)}
+.krow .kp .pbar{flex:1;margin:0}
+.krow .kp b{font-family:var(--f-num)}
+@media (max-width:560px){.krow .ks{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <div class="badge-title" id="bdg"><b>26.11월</b>경기지점</div>
+  <div class="badge-title" id="bdg"><b>경기지점 현황</b></div>
   <div><h1>조직·활동관리</h1><div class="sub" id="subt"></div></div>
   <div class="role">
     <div class="seg"><button id="rBoss" class="on">지점장</button><button id="rMgr">매니저</button></div>
@@ -296,8 +323,8 @@ let LC=0;
 const chartW=(max=1120)=>Math.max(300,Math.min(innerWidth,max)-32-30-2);
 /* 실적추이 라인차트: 남색 실선 + 흰 원 마커 + 영역 그라데이션, 점선 = 비교선, 마지막 주황점 = 당월(예상) */
 function lineChart(labels,vals,o={}){
-  const n=labels.length, W=Math.round(o.w||chartW()), H=o.h||170, L=30, Rr=34, T=40, B=32, id='lg'+(LC++);
-  const all=[...vals,...(o.ref||[])].map(v=>v||0), mx=Math.max(...all,1)*1.12, mn=0;
+  const n=labels.length, W=Math.round(o.w||chartW()), H=o.h||170, L=o.L??30, Rr=o.R??34, T=o.T??40, B=o.B??32, id='lg'+(LC++);
+  const all=[...vals,...(o.ref||[])].map(v=>v||0), mx0=Math.max(...all,1), mn0=Math.min(...all.filter(v=>v>0)), mn=o.fit?Math.max(0,mn0-(mx0-mn0)*0.35):0, mx=o.fit?mx0+(mx0-mn)*0.08:mx0*1.12;
   const X=i=>n===1?W/2:L+(W-L-Rr)*i/(n-1), Y=v=>T+(H-T-B)*(1-((v||0)-mn)/(mx-mn));
   const pts=vals.map((v,i)=>[X(i),Y(v)]);
   const solidN=o.lastHot?n-1:n;
@@ -310,9 +337,10 @@ function lineChart(labels,vals,o={}){
   if(o.lastHot&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--hot)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
   pts.forEach((p,i)=>{const hot=o.lastHot&&i===n-1;
     g+=hot?`<circle cx="${p[0]}" cy="${p[1]}" r="6.5" fill="var(--hot)"/>`:`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--card)" stroke="var(--navy)" stroke-width="2.5"/>`;
-    g+=`<text x="${p[0]}" y="${p[1]-11}" text-anchor="middle" font-size="12.5" font-weight="700" font-family="Roboto,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':'var(--ink)'}">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`;
-    if(o.sub&&o.sub[i]) g+=`<text x="${p[0]}" y="${p[1]+19}" text-anchor="middle" font-size="11" font-family="Roboto,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':'var(--ink2)'}">${o.sub[i]}</text>`;
-    g+=`<text x="${p[0]}" y="${H-10}" text-anchor="middle" font-size="11.5" fill="var(--ink3)">${labels[i]}</text>`;});
+    g+=`<text x="${p[0]}" y="${p[1]-11}" text-anchor="middle" font-size="${o.vfs||12.5}" font-weight="700" font-family="Roboto,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':'var(--ink)'}">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`;
+    if(o.sub&&o.sub[i]&&o.subAxis) g+=`<text x="${p[0]}" y="${H-4}" text-anchor="middle" font-size="10.5" font-weight="500" font-family="Roboto,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':(o.subCol&&o.subCol[i])||'var(--ink2)'}">${o.sub[i]}</text>`;
+    else if(o.sub&&o.sub[i]) g+=`<text x="${p[0]}" y="${p[1]+(o.subDy||19)}" text-anchor="middle" font-size="11" font-family="Roboto,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':'var(--ink2)'}">${o.sub[i]}</text>`;
+    g+=`<text x="${p[0]}" y="${o.subAxis?H-19:H-10}" text-anchor="middle" font-size="11.5" fill="var(--ink3)">${labels[i]}</text>`;});
   const lg=o.legend?`<div class="legend" style="margin:2px 0 0"><span><i style="background:var(--navy);height:3px;vertical-align:3px"></i>${o.legend[0]}</span>${o.ref?`<span><i style="background:none;border-top:2px dashed var(--ink3);height:0;vertical-align:3px"></i>${o.legend[1]}</span>`:''}${o.lastHot?`<span><i style="background:var(--hot);border-radius:50%"></i>${o.legend[2]}</span>`:''}</div>`:'';
   return `<svg class="lchart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||'실적 추이')}" style="font-family:var(--f-body)">${g}</svg>${lg}`;
 }
@@ -341,7 +369,7 @@ function mgrStat(name){
 
 /* ---------- 상태 ---------- */
 const st={role:'boss',mgr:MGRS[0],tab:'home',q:'',f:'all',sort:'cur',agMgr:'all'};
-try{const s=JSON.parse(localStorage.getItem('gg-org-app')||'{}'); if(s.role)st.role=s.role; if(MGRS.includes(s.mgr))st.mgr=s.mgr; if(s.theme)document.documentElement.dataset.theme=s.theme;}catch(e){}
+try{const s=JSON.parse(localStorage.getItem('gg-org-app')||'{}'); if(MGRS.includes(s.mgr))st.mgr=s.mgr; if(s.theme)document.documentElement.dataset.theme=s.theme;}catch(e){}
 const save=()=>{try{localStorage.setItem('gg-org-app',JSON.stringify({role:st.role,mgr:st.mgr,theme:document.documentElement.dataset.theme||''}))}catch(e){}};
 
 const IC={
@@ -370,65 +398,51 @@ function render(){
 
 /* ================= 지점장 ================= */
 function bossHome(){
-  const kp=D.kpi.map(k=>{const proj=k.rate*PACE, d1=D.d1[k.name]||0, diff=k.rate-M.baseRate;
-    const unit=k.name==='하이캡'||k.name==='인보험';
-    const v=unit?manK(k.actual)+'<small>천원</small>':f0(k.actual)+'<small>'+(k.name==='가동지사'?'개':'명')+'</small>';
-    const tg=unit?manK(k.target):f0(k.target);
-    return `<div class="card kpi"><div class="k-n">${k.name}<span class="tag ${diff>=0?'t-up':'t-dn'}" style="margin-left:auto">${diff>=0?'▲':'▼'} 진도 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
-      <div class="k-v">${v}</div><div class="k-s">목표 ${tg} · 달성 <b class="num" style="color:var(--orange)">${pct(k.rate)}</b></div>
-      <div class="pbar"><i style="width:${Math.min(100,k.rate*100)}%"></i><b style="left:${M.baseRate*100}%"></b></div>
-      <div class="k-s" style="margin-top:7px">월말예상 <b class="num">${pct(proj)}</b> · 전일 +${unit?manK(d1):f0(d1)}</div></div>`;}).join('');
-  const hk=D.kpi.find(k=>k.name==='하이캡'), i20=D.kpi.find(k=>k.name==='인20만');
-  const incT=r=>{for(const [t,p] of INC) if(r>=t) return {t,p}; return null;};
-  const incCard=(k)=>{const pr=k.rate*PACE, t=incT(pr); return `<div class="kv"><div><span>${k.name} 월말예상</span><b>${pct(pr)}</b></div><div><span>예상 지점인센</span><b style="color:var(--orange)">${t?f0(t.p)+'천원':'미달'}</b></div></div>`;};
-  // 월별 추이
   const H=D.hist.data, ms=D.hist.months;
-  const chart=(key)=>{ // 목표 vs 실적 막대 + 달성률, 11월은 현재실적 + 월말예상(빗금)
-    const T=H[key]['목표'].map(v=>+v||0), A=H[key]['실적'].map(v=>+v||0), R=H[key]['달성율'];
-    const k=D.kpi.find(x=>x.name===key);
-    const tg=[...T,k.target], ac=[...A,k.actual], pj=[...A.map(()=>0),k.actual*PACE], rt=[...R,k.rate*PACE];
-    const lab=[...ms,'11월'], n=lab.length, W=520,Hh=190,L=50,B=24,top=22, cw=(W-L-6)/n;
-    const mx=Math.max(...tg,...ac,...pj)*1.08, y=v=>top+(Hh-top-B)*(1-v/mx);
-    const unit=v=>f0(v);
-    let g='';
-    const stp=(()=>{const r=mx/4,p=Math.pow(10,Math.floor(Math.log10(r)));return [1,2,2.5,5,10].map(m=>m*p).find(m=>m>=r);})();for(let i=0;i*stp<=mx;i++){const v=stp*i,yy=y(v);g+=`<line class="gl" x1="${L}" x2="${W-4}" y1="${yy}" y2="${yy}"/><text x="${L-4}" y="${yy+3}" text-anchor="end">${unit(v)}</text>`;}
-    let bars='';
-    for(let i=0;i<n;i++){const x=L+i*cw, bw=cw*0.36, cur=i===n-1;
-      bars+=`<rect class="bt" x="${x+cw*0.12}" y="${y(tg[i])}" width="${bw}" height="${Math.max(0,y(0)-y(tg[i]))}" rx="2"><title>${lab[i]} 목표 ${unit(tg[i])}</title></rect>`;
-      if(cur) bars+=`<rect class="bm" x="${x+cw*0.5}" y="${y(pj[i])}" width="${bw}" height="${Math.max(0,y(0)-y(pj[i]))}" rx="2"><title>11월 월말예상 ${unit(pj[i])}</title></rect>`;
-      bars+=`<rect class="ba" x="${x+cw*0.5}" y="${y(ac[i])}" width="${bw}" height="${Math.max(0,y(0)-y(ac[i]))}" rx="2"><title>${lab[i]} 실적 ${unit(ac[i])}</title></rect>`;
-      const ty=Math.min(y(tg[i]),y(Math.max(ac[i],pj[i])))-5;
-      bars+=`<text class="lbl ${rt[i]>=1?'hit':''}" x="${x+cw/2}" y="${ty}" text-anchor="middle">${Math.round((rt[i]||0)*100)}%${cur?'e':''}</text><text x="${x+cw/2}" y="${Hh-8}" text-anchor="middle">${lab[i]}</text>`;}
-    return `<svg class="vchart" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${key} 월별 목표 대비 실적">${g}${bars}</svg>
-      <div class="legend" style="margin-top:4px"><span><i style="background:#DCE1EC"></i>목표</span><span><i style="background:var(--orange)"></i>실적</span><span><i style="background:var(--hot);opacity:.35"></i>11월 월말예상</span><span style="margin-left:auto">위 숫자 = 달성률</span></div>`;};
+  const ORDER=['하이캡','인보험','인5만','인20만','가동지사'];
+  const narrow=innerWidth<700;
+  const kpiRow=k=>{
+    const h=H[k.name]||{}, money=k.name==='하이캡'||k.name==='인보험', unit=money?'천원':(k.name==='가동지사'?'개':'명');
+    const proj=k.rate*PACE, diff=k.rate-M.baseRate, d1=D.d1[k.name]||0, left=Math.max(0,k.target-k.actual);
+    // 실적 있는 달만 + 11월 월말예상
+    let lab=[],val=[],ref=[],rt=[];
+    ms.forEach((m,i)=>{const a=h['실적']?.[i]; if(a!=null&&a!==''){lab.push(m);val.push(+a);ref.push(+(h['목표']?.[i]||0));rt.push(h['달성율']?.[i]);}});
+    const keep=narrow?4:12; lab=lab.slice(-keep);val=val.slice(-keep);ref=ref.slice(-keep);rt=rt.slice(-keep);
+    lab.push('11월 예상');val.push(Math.round(k.actual*PACE));ref.push(k.target);rt.push(proj);
+    const sub=rt.map(r=>r!=null?(Math.round(r*1000)/10).toFixed(1)+'%':'');
+    const chart=lineChart(lab,val,{w:chartW()-4,h:124,T:24,B:42,L:30,R:42,fit:true,ref,sub,subAxis:true,subCol:rt.map(r=>r>=1?'var(--navy)':'var(--red)'),vfs:narrow?11.5:12.5,lastHot:true,aria:k.name+' 월별 실적 추이'});
+    return `<div class="card krow">
+      <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
+        <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 진도 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
+      <div class="kc">${chart}</div>
+      <div class="ks">
+        <div><span>목표</span><b>${f0(k.target)}</b></div>
+        <div><span>현재실적</span><b>${f0(k.actual)}</b></div>
+        <div class="${left>0?'left':'done'}"><span>목표까지 남음</span><b>${left>0?f0(left):'달성'}</b></div>
+        <div><span>달성률</span><b>${pct(k.rate)}</b></div>
+      </div>
+      <div class="kp"><span>진도</span><div class="pbar"><i style="width:${Math.min(100,k.rate*100)}%"></i><b style="left:${M.baseRate*100}%"></b></div>
+        <span>월말예상 <b>${pct(proj)}</b> · 전일 +<b>${f0(d1)}</b></span></div>
+    </div>`;};
+  const kp=ORDER.map(n=>D.kpi.find(k=>k.name===n)).filter(Boolean).map(kpiRow).join('');
+  const dt=new Date(M.date+'T00:00:00');
   // 매니저 요약 랭킹
   const ms2=MGRS.map(mgrStat).sort((a,b)=>b.proj-a.proj);
   const totalHw=sum(ms2.map(x=>x.hw)), totalNear=sum(ms2.map(x=>x.near));
   const lapsed=D.agencies.filter(a=>{const n=a.ins.length;return a.ins[n-2]>0&&!(a.ins[n-1]>0)&&MGRS.includes(a.mgr)}).length;
   return `
-  <div class="hero">
-    <div><div class="lbl">기준일</div><div class="big">${M.date.slice(5).replace('-','.')}</div></div>
-    <div class="prog"><div class="lbl">영업일 진도 ${M.elapsed} / ${M.days}일</div><div class="bar"><i style="width:${M.baseRate*100}%"></i></div></div>
-    <div><div class="lbl">기준달성률</div><div class="big">${pct(M.baseRate)}</div></div>
-  </div>
-  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">막대 위 주황선 = 오늘 기준진도</span></div>
-  <div class="grid g5">${kp}</div>
-  <div class="grid g2 st" style="margin-top:10px">
-    <div class="card pad"><div class="sec-h" style="margin-top:0"><h2>지점인센 전망</h2><span class="hint">100%↑70 · 110%↑100 · 120%↑150</span></div>
-      ${incCard(hk)}<div style="height:8px"></div>${incCard(i20)}
-      <div class="note">※ 미달 시 개인 하이캡배수 12 이상이면 50천원 지급</div></div>
-    <div class="card pad"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
+  <div class="datebar"><div class="d"><b>${dt.getMonth()+1}</b>월 <b>${dt.getDate()}</b>일 마감기준</div>
+    <div class="m">경과영업일 <b>${M.elapsed}</b>일 · 영업일기준 달성률 <b>${Math.round(M.baseRate*100)}%</b></div>
+    <div class="tr" title="영업일 진도 ${M.elapsed}/${M.days}"><i style="width:${M.baseRate*100}%"></i></div></div>
+  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">점선 목표 · 주황 월말예상 · 월 아래 % 달성률</span></div>
+  <div class="grid" style="gap:10px">${kp}</div>
+  <div class="card pad" style="margin-top:10px"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
       <div class="kv">
-        <div><span>설계지원 환산인원</span><b>${f1(totalHw)}명</b></div>
-        <div><span>근접자 (5만·20만)</span><b style="color:var(--orange)">${totalNear}명</b></div>
-        <div><span>전월가동·당월미가동 지사</span><b style="color:var(--red)">${lapsed}곳</b></div>
+        <div><span>설계지원 환산인원</span><b>${f1(totalHw)}<small class="u">명</small></b></div>
+        <div><span>근접자 (5만·20만)</span><b style="color:var(--hot)">${totalNear}<small class="u">명</small></b></div>
+        <div><span>전월가동·당월미가동 지사</span><b style="color:var(--red)">${lapsed}<small class="u">곳</small></b></div>
         <div><span>브릿지 대상 / 달성</span><b>${D.bridge.length} / ${D.bridge.filter(b=>b.ok==='달성').length}</b></div>
       </div></div>
-  </div>
-  <div class="grid g2 st" style="margin-top:10px">
-    <div class="card pad"><div class="sec-h" style="margin-top:0"><h2>인보험 달성률 추이</h2><span class="hint">목표·실적 막대 · 11월e = 월말예상</span></div>${chart('인보험')}</div>
-    <div class="card pad"><div class="sec-h" style="margin-top:0"><h2>하이캡 달성률 추이</h2><span class="hint">목표·실적 막대 · 11월e = 월말예상</span></div>${chart('하이캡')}</div>
-  </div>
   <div class="note">※ 월말예상 = 현재 실적 ÷ 경과영업일(${M.elapsed}일) × 당월 영업일수(${M.days}일). 월초에는 오차가 커요.</div>
   <div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="chip-n">${ms2.length}</span><span class="hint">월말예상 순 · 탭하면 매니저 화면</span></div>
   <div class="card list">${ms2.map((x,i)=>`<div class="row" data-go-mgr="${esc(x.m.name)}"><span class="rank ${i<3?'rk1':''}">${i+1}</span>${tel(x.m.phone,x.m.name)}
