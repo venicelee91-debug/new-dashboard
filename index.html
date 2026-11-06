@@ -272,6 +272,13 @@ small.u,.u-s{font-family:var(--f-num);font-size:.6em;font-weight:500;margin-left
 .krow .kp .pbar{flex:1;margin:0}
 .krow .kp b{font-family:var(--f-num)}
 @media (max-width:560px){.krow .ks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 흰 바탕 섹션 테두리 */
+:root{--cardLine:#DDE0E7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cardLine:#2C3650}}
+:root[data-theme="dark"]{--cardLine:#2C3650}
+.card,.kv div,.dz,.search,.tabs button:not(.on),.pills button:not(.on),select.sm{border:1px solid var(--cardLine)}
+.dz.ok,.dz.go,.dz.no,.dz.sm{border-top:1px solid var(--cardLine);border-right:1px solid var(--cardLine);border-bottom:1px solid var(--cardLine)}
 </style>
 </head>
 <body>
