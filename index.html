@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 19:22 KST">
+<meta name="build-time" content="2026-11-07 19:27 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -457,7 +457,7 @@ let LC=0;
 const trendOpt=(v,max,aria)=>{const n=v.length,pst=v.slice(0,n-1),U=(sum(pst)/Math.max(1,pst.length))||1;
   const ch=v.map((q,i)=>i===0||i===n-1||!v[i-1]?'':(q>=v[i-1]?'▲':'▼')+Math.abs(Math.round((q/v[i-1]-1)*100))+'%');
   const cc=v.map((q,i)=>i>0&&q<v[i-1]?'var(--red)':'var(--navy)');
-  return Object.assign(KSTYLE(),{w:chartW(max),h:115,B:42,unit:U,sub:ch,subCol:cc,projVal:Math.round((v[n-1]||0)*PACE),projLabel:'예상 '+f0((v[n-1]||0)*PACE),aria});};
+  return Object.assign(KSTYLE(),{w:chartW(max),h:115,B:42,unit:U,sub:ch,subCol:cc,aria});};
 const KSTYLE=()=>({h:129,T:24,B:56,L:12,R:12,edge:8,fit:true,focus:true,subAxis:true,lastLive:true,liveLeft:true,vfs:innerWidth<700?10.5:11.5});
 const chartW=(max=1120)=>Math.max(300,Math.min(innerWidth,max)-32-30-2);
 /* 실적추이 라인차트: 남색 실선 + 흰 원 마커 + 영역 그라데이션, 점선 = 비교선, 마지막 주황점 = 당월(예상) */
