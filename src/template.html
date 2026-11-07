@@ -687,7 +687,7 @@ function mgrHome(){
       return lineChart(lab,v,Object.assign(KSTYLE(),{w:chartW()-4,unit:U,ref:av,sub,sub2,sub2Col:'var(--navy)',subCol:av.map(()=>'var(--ink3)'),projVal:Math.round(x.proj),projLabel:'예상 '+f0(x.proj),aria:'월별 체결실적 추이'}));})()}
    <div class="kv kv4" style="margin-top:10px"><div><span>하이캡배수</span><b>${f1(m.hicap)}</b></div><div><span>당월 설계건수</span><b>${f0(m.designs)}</b></div><div><span>담당 지사</span><b>${x.ags.length}곳</b></div><div><span>당월 가동 설계사</span><b>${x.active}명</b></div></div>
   </div>
-  <div class="card prof" style="margin-top:10px"><div class="ph">${tel(m.phone,m.name)}<span class="n">${esc(m.name)}</span><span class="tag t-gy">${m.tenure}차월</span></div>
+  <div class="card prof" style="margin-top:10px"><div class="ph">${tel(m.phone,m.name)}<span class="n">${esc(m.name)}</span></div>
     <div class="st">
       <div><span>체결실적</span><b>${f0(x.cur)}<small>천원</small></b></div>
       <div><span>환산인원</span><b>${f1(x.hw)}<small>명</small></b></div>
