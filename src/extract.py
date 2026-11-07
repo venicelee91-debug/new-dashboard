@@ -89,6 +89,15 @@ for r in ws.iter_rows(min_row=4,values_only=True):
     if not any(vals) and code not in hw: continue
     pl[code]={'mgr':r[0],'ag':r[1],'name':r[2],'code':code,'new':r[4]=='신규','m':vals[:7],'cur':vals[7]}
 D['plMonths']=['4월','5월','6월','7월','8월','9월','10월']
+# 지점 하이캡배수: raw_당월건별BD, 상품명 재물·저축 제외, Σ하이캡실적 ÷ Σ월납보험료
+try:
+    wsb=wb['raw_당월건별BD'];_P=_H=0
+    for r in wsb.iter_rows(min_row=9,values_only=True):
+        if not r[4] or r[4] in ('재물','저축'): continue
+        _P+=num(r[6]);_H+=num(r[7])
+    D['branchHicap']=round(_H/_P,2) if _P else None
+except KeyError:
+    D['branchHicap']=None
 # designs
 ws=wb['raw_설계지원건별']
 des={}
