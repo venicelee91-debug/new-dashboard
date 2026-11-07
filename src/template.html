@@ -444,6 +444,12 @@ const CHEV='<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="n
 const spark=(arr,w=64,h=20,col='var(--orange)')=>{const a=arr.map(v=>v||0),mx=Math.max(...a,1),n=a.length;const pts=a.map((v,i)=>`${(i/(n-1))*w},${h-2-(v/mx)*(h-4)}`).join(' ');return `<svg class="spark" width="${w}" height="${h}"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round"/></svg>`;};
 const sum=a=>a.reduce((s,v)=>s+(v||0),0);
 let LC=0;
+/* 실적 추이(설계사·지사 상세): KPI 디자인, 월 아래 = 전월대비 */
+const trendOpt=(v,max,aria)=>{const n=v.length,pst=v.slice(0,n-1),U=(sum(pst)/Math.max(1,pst.length))||1;
+  const ch=v.map((q,i)=>i===0||i===n-1||!v[i-1]?'':(q>=v[i-1]?'▲':'▼')+Math.abs(Math.round((q/v[i-1]-1)*100))+'%');
+  const cc=v.map((q,i)=>i>0&&q<v[i-1]?'var(--red)':'var(--navy)');
+  return Object.assign(KSTYLE(),{w:chartW(max),h:115,B:42,unit:U,sub:ch,subCol:cc,projVal:Math.round((v[n-1]||0)*PACE),projLabel:'예상 '+f0((v[n-1]||0)*PACE),aria});};
+const KSTYLE=()=>({h:129,T:24,B:56,L:12,R:12,edge:8,fit:true,focus:true,subAxis:true,lastLive:true,liveLeft:true,vfs:innerWidth<700?10.5:11.5});
 const chartW=(max=1120)=>Math.max(300,Math.min(innerWidth,max)-32-30-2);
 /* 실적추이 라인차트: 남색 실선 + 흰 원 마커 + 영역 그라데이션, 점선 = 비교선, 마지막 주황점 = 당월(예상) */
 function lineChart(labels,vals,o={}){
@@ -452,12 +458,12 @@ function lineChart(labels,vals,o={}){
   const X=i=>n===1?W/2:L+(W-L-Rr)*i/(n-1);
   let Y=v=>T+(H-T-B)*(1-((v||0)-mn)/(mx-mn));
   if(o.focus){ // 달성률용: 지난 달들 범위를 확대(±3%는 거의 수평, 10%p 이상은 뚜렷), 진행중인 달 낮은 값은 아래 띠에 압축
-    const past=vals.slice(0,o.lastLive?n-1:n).map(v=>+v||0), cur=+vals[n-1]||0;
-    let lo=Math.min(...past,1), hi=Math.max(...past,1,cur,o.projVal||0);
-    const minSpan=o.minSpan||0.24, pad=(hi-lo)*0.08+0.02; lo-=pad; hi+=pad;
+    const past=vals.slice(0,o.lastLive?n-1:n).map(v=>+v||0), cur=+vals[n-1]||0, U=o.unit||1, rp=(o.ref||[]).slice(0,o.lastLive?n-1:n).map(v=>+v||0);
+    let lo=Math.min(...past,...(o.unit?rp:[1])), hi=Math.max(...past,...(o.unit?rp:[1]),cur,o.projVal||0);
+    const minSpan=(o.minSpan||0.24)*U, pad=(hi-lo)*0.08+0.02*U; lo-=pad; hi+=pad;
     if(hi-lo<minSpan){const c=(hi+lo)/2; lo=c-minSpan/2; hi=c+minSpan/2;}
     const ph=H-T-B, band=ph*0.24, base=H-B;
-    Y=v=>{v=+v||0; if(v>=lo) return base-band-(Math.min(v,hi)-lo)/(hi-lo)*(ph-band); return base-Math.max(0,v)/lo*band;};
+    Y=v=>{v=+v||0; if(v>=lo) return base-band-(Math.min(v,hi)-lo)/(hi-lo)*(ph-band); return base-Math.max(0,v)/Math.max(lo,1e-9)*band;};
   }
   const pts=vals.map((v,i)=>[X(i),Y(v)]);
   const solidN=(o.lastHot||o.lastLive)?n-1:n;
@@ -673,12 +679,11 @@ function mgrHome(){
   // 환산 상승 후보 (체결 가능 설계 보유 or 근접)
   const ups=hwCandidates(st.mgr).slice(0,5);
   return `
-  <div class="card pad"><div class="sec-h" style="margin-top:0"><h2>체결실적 추이</h2><span class="hint">천원 · 최근 6개월 + 11월 예상</span></div>
-   ${(()=>{const k=7, lab=D.mgrMonths.slice(-k), v=m.perf.slice(-k).map(x=>x||0), av=(D.mgrAvg||[]).slice(-k).map(x=>x||0);
-      v[k-1]=x.proj; av[k-1]=av[k-1]*PACE;
-      const sub=v.map((q,i)=>i===k-1?`현재 ${f0(x.cur)}`:(av[i]?Math.round(q/av[i]*100)+'%':''));
-      return lineChart(lab.map((l,i)=>i===k-1?l+' 예상':l),v,{ref:av,sub,lastHot:true,aria:'월별 체결실적 추이',legend:['체결실적','지점 인당평균','11월 월말예상']});})()}
-   <div class="note" style="margin-top:2px">% = 지점 매니저 인당평균 대비</div>
+  <div class="card pad"><div class="sec-h" style="margin-top:0"><h2>체결실적 추이</h2><span class="hint">천원 · 점선 지점 인당평균 · 월 아래 인당평균/대비</span></div>
+   ${(()=>{const k=6, lab=D.mgrMonths.slice(-k), v=m.perf.slice(-k).map(x=>x||0), av=(D.mgrAvg||[]).slice(-k).map(x=>x||0);
+      v[k-1]=x.cur; const pst=v.slice(0,k-1), U=sum(pst)/Math.max(1,pst.length)||1;
+      const sub=av.map(q=>f0(q)), sub2=v.map((q,i)=>av[i]?Math.round(q/av[i]*100)+'%':'');
+      return lineChart(lab,v,Object.assign(KSTYLE(),{w:chartW()-4,unit:U,ref:av,sub,sub2,sub2Col:'var(--navy)',subCol:av.map(()=>'var(--ink3)'),projVal:Math.round(x.proj),projLabel:'예상 '+f0(x.proj),aria:'월별 체결실적 추이'}));})()}
    <div class="kv kv4" style="margin-top:10px"><div><span>하이캡배수</span><b>${f1(m.hicap)}</b></div><div><span>당월 설계건수</span><b>${f0(m.designs)}</b></div><div><span>담당 지사</span><b>${x.ags.length}곳</b></div><div><span>당월 가동 설계사</span><b>${x.active}명</b></div></div>
   </div>
   <div class="card prof" style="margin-top:10px"><div class="ph">${tel(m.phone,m.name)}<span class="n">${esc(m.name)}</span><span class="tag t-gy">${m.tenure}차월</span></div>
@@ -812,8 +817,8 @@ function plSheet(code){
     <div><span>당월 인보험</span><b>${manK(p.cur)}</b></div>
     ${h?`<div><span>설계지원 체결</span><b>${manW(amt)}</b></div><div><span>환산인원</span><b style="color:var(--orange)">${base}명</b></div><div><span>다음 환산구간</span><b>${nx?manW(nx.gap)+' 남음':'최고'}</b></div>`:''}
     ${br?`<div><span>브릿지 ${br.type.replace('대상','')}</span><b style="color:${br.ok==='달성'?'var(--green)':'var(--red)'}">${br.ok==='달성'?'달성':manW((br.type.includes('주력')?br.ju:br.in)[3])+' 남음'}</b></div>`:''}</div>
-  <div class="card pad" style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;color:var(--ink2)">인보험 실적추이 (천원)</div>
-    ${lineChart([...D.plMonths,'당월'],[...p.m,p.cur].map(v=>Math.max(0,v||0)),{w:chartW(720),lastHot:true,aria:'월별 인보험 추이',legend:['월 실적','','당월 진행']})}</div>`;
+  <div class="card pad" style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;color:var(--ink2)">인보험 실적추이 <span style="font-weight:400;color:var(--ink3)">천원 · 월 아래 전월대비</span></div>
+    ${(()=>{const lab=[...D.plMonths.slice(-5),'11월'],v=[...p.m.slice(-5),p.cur].map(x=>Math.max(0,x||0));return lineChart(lab,v,trendOpt(v,720,'월별 인보험 추이'));})()}</div>`;
   const dhtml=ds.length?`<div class="sec-h" style="margin-top:4px"><h2>설계 내역</h2><span class="chip-n">${ds.length}</span><span class="hint">체결가능 · 보험료 큰 순</span></div>`+ds.map(d=>{
      const g=(!d.y&&canClose(d)&&d.k!=='물보험')?hwOf(amt+d.prem)-base:0;
      return `<div class="dz ${cls(d)}">${lab(d)} <span class="tag t-gy">${esc(d.k)}</span>${g>0?` <span class="tag t-up">체결 시 환산 +${g}</span>`:''}
@@ -830,8 +835,8 @@ function agSheet(name){
   const pls=PL.filter(p=>p.ag===name).sort((x,y)=>y.cur-x.cur||avg3(y.m)-avg3(x.m));
   const head=`<div style="padding-right:40px"><div class="disp" style="font-size:19px">${esc(name)}</div><div style="font-size:12px;color:var(--ink3)">${esc(a.hq||'')} · 담당 ${esc(MGRS.includes(a.mgr)?a.mgr:'미배정')} · ${esc(a.type)}</div></div>`;
   const body=`<div class="kv" style="margin-bottom:10px"><div><span>당월 인보험</span><b>${manK(a.ins[n-1])}</b></div><div><span>10월</span><b>${manK(a.ins[n-2])}</b></div><div><span>3개월평균</span><b>${manK(avg3(a.ins.slice(0,n-1)))}</b></div><div><span>철회</span><b style="color:var(--red)">${manK(a.wd)}</b></div></div>
-   <div class="card pad" style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--ink2)">인보험 실적추이 (천원)</div>
-   ${(()=>{const k=8,lab=D.agMonths.slice(-k).map(m=>(String(m).slice(4)*1)+'월'),v=a.ins.slice(-k).map(x=>Math.max(0,x||0));return lineChart(lab,v,{w:chartW(720),lastHot:true,aria:'지사 월별 인보험 추이',legend:['월 실적','','당월 진행']});})()}</div>
+   <div class="card pad" style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--ink2)">인보험 실적추이 <span style="font-weight:400;color:var(--ink3)">천원 · 월 아래 전월대비</span></div>
+   ${(()=>{const k=8,lab=D.agMonths.slice(-k).map(m=>(String(m).slice(4)*1)+'월'),v=a.ins.slice(-k).map(x=>Math.max(0,x||0));return lineChart(lab.slice(-6),v.slice(-6),trendOpt(v.slice(-6),720,'지사 월별 인보험 추이'));})()}</div>
    ${a.part?`<div class="card pad" style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:6px">조직 (명) · 4월→11월</div>
      <div class="kv"><div><span>인참여</span><b>${a.part.map(f0).join(' · ')}</b></div></div><div class="kv" style="margin-top:6px"><div><span>인5만</span><b>${a.m5.map(f0).join(' · ')}</b></div></div><div class="kv" style="margin-top:6px"><div><span>인20만</span><b>${a.m20.map(f0).join(' · ')}</b></div></div></div>`:''}
    <div class="sec-h"><h2>소속 설계사</h2><span class="chip-n">${pls.length}</span></div>
