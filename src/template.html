@@ -393,7 +393,16 @@ const chartW=(max=1120)=>Math.max(300,Math.min(innerWidth,max)-32-30-2);
 function lineChart(labels,vals,o={}){
   const n=labels.length, W=Math.round(o.w||chartW()), H=o.h||170, L=o.L??30, Rr=o.R??34, T=o.T??40, B=o.B??32, id='lg'+(LC++);
   const all=[...vals,...(o.ref||[]),...(o.curVal!=null?[o.curVal]:[]),...(o.projVal!=null?[o.projVal]:[])].map(v=>v||0), mx0=Math.max(...all,1), mn0=Math.min(...all.filter(v=>v>0)), mn=o.fit?Math.max(0,mn0-(mx0-mn0)*0.35):0, mx=o.fit?mx0+(mx0-mn)*0.08:mx0*1.12;
-  const X=i=>n===1?W/2:L+(W-L-Rr)*i/(n-1), Y=v=>T+(H-T-B)*(1-((v||0)-mn)/(mx-mn));
+  const X=i=>n===1?W/2:L+(W-L-Rr)*i/(n-1);
+  let Y=v=>T+(H-T-B)*(1-((v||0)-mn)/(mx-mn));
+  if(o.focus){ // 달성률용: 지난 달들 범위를 확대(±3%는 거의 수평, 10%p 이상은 뚜렷), 진행중인 달 낮은 값은 아래 띠에 압축
+    const past=vals.slice(0,o.lastLive?n-1:n).map(v=>+v||0), cur=+vals[n-1]||0;
+    let lo=Math.min(...past,1), hi=Math.max(...past,1,cur);
+    const minSpan=o.minSpan||0.24, pad=(hi-lo)*0.08+0.02; lo-=pad; hi+=pad;
+    if(hi-lo<minSpan){const c=(hi+lo)/2; lo=c-minSpan/2; hi=c+minSpan/2;}
+    const ph=H-T-B, band=ph*0.24, base=H-B;
+    Y=v=>{v=+v||0; if(v>=lo) return base-band-(Math.min(v,hi)-lo)/(hi-lo)*(ph-band); return base-Math.max(0,v)/lo*band;};
+  }
   const pts=vals.map((v,i)=>[X(i),Y(v)]);
   const solidN=(o.lastHot||o.lastLive)?n-1:n;
   const path=a=>a.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
@@ -486,7 +495,7 @@ function bossHome(){
     lab.push('11월');val.push(k.actual);ref.push(k.target);rt.push(k.rate);
     const pf=v=>(Math.round(v*1000)/10).toFixed(1)+'%';
     const rv=rt.map(r=>+r||0), sub=ref.map(v=>f0(v)), sub2=val.map(v=>f0(v));
-    const chart=lineChart(lab,rv,{w:chartW()-4,h:129,T:24,B:56,L:30,sub2,sub2Col:'var(--navy)',R:58,fit:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,base:M.baseRate,baseFmt:v=>Math.round(v*100)+'%',fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
+    const chart=lineChart(lab,rv,{w:chartW()-4,h:129,T:24,B:56,L:30,sub2,sub2Col:'var(--navy)',R:58,fit:true,focus:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,base:M.baseRate,baseFmt:v=>Math.round(v*100)+'%',fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
     return `<div class="card krow">
       <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
         <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 영업일 기준대비 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
