@@ -646,9 +646,9 @@ function render(){
 }
 // 페이스 표: 한 줄이라도 칸을 넘치면 표 전체 글자를 같은 비율로 줄임
 function fitMt(){const mt=document.querySelector('.mt');if(!mt)return;const t=mt.querySelector('.mt-t');if(!t)return;
-  // 최대 자리수로 폭을 미리 잡아둠: 3평·당월 88,888 / D-1 +8,888 / 3평比 888% / 하이캡 88.8 / 설계량 8,888 / 환산 88.8
+  // 최대 자리수로 폭을 미리 잡아둠: 3평·당월 88,888 / D-1 +8,888 / 3평比 888% / 하이캡 88.8 / 설계량 8,888 / 환산 888.8(지점 계)
   const pr=t.cloneNode(true);pr.classList.add('mt-probe');pr.setAttribute('aria-hidden','true');
-  const W={a3:'88,888',cur:'88,888',d1:'+8,888',r:'888<i>%</i>',hc:'88.8',dz:'8,888',hw:'88.8'};
+  const W={a3:'88,888',cur:'88,888',d1:'+8,888',r:'888<i>%</i>',hc:'88.8',dz:'8,888',hw:'888.8'};
   pr.querySelectorAll('.c').forEach(c=>{const m=[...c.classList].find(x=>x.startsWith('c-'));if(m&&W[m.slice(2)]!=null)c.innerHTML=W[m.slice(2)];});
   mt.appendChild(pr);
   let k=1;mt.style.setProperty('--mtk',1);const box=c=>{const g=document.createRange();g.selectNodeContents(c);return g.getBoundingClientRect();};

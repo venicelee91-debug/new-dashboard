@@ -122,6 +122,12 @@ for code,p in pl.items():
 agm={a['name']:a['mgr'] for a in ag.values()}
 for p in pl.values():
     if not p['mgr']: p['mgr']=agm.get(p['ag'])
+# 설계지원체결현황_설계사: 설계사별 월별 설계지원건수·인보험 체결실적(천원, 실손 제외)
+if '설계지원체결현황_설계사' in wb.sheetnames:
+    ws=wb['설계지원체결현황_설계사']
+    for r in ws.iter_rows(min_row=7,values_only=True):
+        c=str(r[4]).strip() if r[4] else None
+        if c in pl: pl[c].update({'dzM':[num(v) for v in r[6:14]],'csM':[num(v) for v in r[14:22]],'cs':num(r[21])})
 D['planners']=[p for p in pl.values() if p['mgr'] not in ('정지혜',)]
 D['designs']=des
 print(len(D['planners']),len(D['agencies']),len(D['designs']),len(D['bridge']),sum(1 for p in D['planners'] if p['tel']),file=sys.stderr)
@@ -135,7 +141,7 @@ snap={'kpi':{x['name']:x['actual'] for x in D['kpi']},
       'mgr':{m['name']:{'perf':m['perf'][-1] or 0} for m in D['managers']},
       'hw':{m['name']:sum(p['hwx']['hw'] for p in D['planners'] if p.get('hwx') and p['hwx']['mgr']==m['name']) for m in D['managers']},
       'ag':{a['name']:a['ins'][-1] for a in D['agencies']},
-      'pl':{p['code']:[p['cur'],(p.get('hwx') or {}).get('amt',0)] for p in D['planners'] if p['cur'] or p.get('hwx')}}
+      'pl':{p['code']:[p['cur'],p.get('cs') or 0] for p in D['planners'] if p['cur'] or p.get('cs') or p.get('hwx')}}  # [당월인보험, 설계지원 인보험체결(천원)]
 # 확장 스냅샷 (2026-11 추가): 설계사 설계·체결·환산·근접·브릿지 / 매니저 설계량·하이캡 / 지사 당월 가동·5만·20만
 _L=lambda a:(a or [0])[-1] or 0
 snap['plx']={p['code']:{'dz':h.get('dz') or 0,'cn':h.get('cn') or 0,'hw':h.get('hw') or 0,'near':h.get('near') or '','br':h.get('br') or '','brOk':h.get('brOk') or '','brLeft':h.get('brLeft') or 0}
