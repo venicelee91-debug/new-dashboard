@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 14:27 KST">
+<meta name="build-time" content="2026-11-07 14:32 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -384,19 +384,21 @@ const chartW=(max=1120)=>Math.max(300,Math.min(innerWidth,max)-32-30-2);
 /* 실적추이 라인차트: 남색 실선 + 흰 원 마커 + 영역 그라데이션, 점선 = 비교선, 마지막 주황점 = 당월(예상) */
 function lineChart(labels,vals,o={}){
   const n=labels.length, W=Math.round(o.w||chartW()), H=o.h||170, L=o.L??30, Rr=o.R??34, T=o.T??40, B=o.B??32, id='lg'+(LC++);
-  const all=[...vals,...(o.ref||[]),...(o.curVal!=null?[o.curVal]:[])].map(v=>v||0), mx0=Math.max(...all,1), mn0=Math.min(...all.filter(v=>v>0)), mn=o.fit?Math.max(0,mn0-(mx0-mn0)*0.35):0, mx=o.fit?mx0+(mx0-mn)*0.08:mx0*1.12;
+  const all=[...vals,...(o.ref||[]),...(o.curVal!=null?[o.curVal]:[]),...(o.projVal!=null?[o.projVal]:[])].map(v=>v||0), mx0=Math.max(...all,1), mn0=Math.min(...all.filter(v=>v>0)), mn=o.fit?Math.max(0,mn0-(mx0-mn0)*0.35):0, mx=o.fit?mx0+(mx0-mn)*0.08:mx0*1.12;
   const X=i=>n===1?W/2:L+(W-L-Rr)*i/(n-1), Y=v=>T+(H-T-B)*(1-((v||0)-mn)/(mx-mn));
   const pts=vals.map((v,i)=>[X(i),Y(v)]);
-  const solidN=o.lastHot?n-1:n;
+  const solidN=(o.lastHot||o.lastLive)?n-1:n;
   const path=a=>a.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
   const area=path(pts.slice(0,solidN))+` L${X(solidN-1).toFixed(1)},${H-B} L${X(0).toFixed(1)},${H-B} Z`;
   let g=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--navy)" stop-opacity=".18"/><stop offset="1" stop-color="var(--navy)" stop-opacity="0"/></linearGradient></defs>`;
   g+=`<line x1="${L}" x2="${W-Rr}" y1="${H-B}" y2="${H-B}" stroke="var(--line)" stroke-width="1"/>`;
   if(o.ref) g+=`<path d="${path(o.ref.map((v,i)=>[X(i),Y(v)]))}" fill="none" stroke="var(--ink3)" stroke-width="2" stroke-dasharray="6 5" opacity=".7"/>`;
   if(solidN>1) g+=`<path d="${area}" fill="url(#${id})"/><path d="${path(pts.slice(0,solidN))}" fill="none" stroke="var(--navy)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(o.lastLive&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-dasharray="4 4"/>`;
+  if(o.projVal!=null&&n>1){const px=X(n-1),py=Y(o.projVal);g+=`<g opacity=".5"><path d="M${pts[n-2][0].toFixed(1)},${pts[n-2][1].toFixed(1)} L${px.toFixed(1)},${py.toFixed(1)}" fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="5 4"/><circle cx="${px}" cy="${py}" r="4.5" fill="var(--card)" stroke="var(--red)" stroke-width="2"/></g><text x="${px}" y="${py-9}" text-anchor="middle" font-size="${(o.vfs||11.5)-1}" fill="var(--red)" opacity=".7" stroke="var(--card)" stroke-width="0.45">예상 ${f0(o.projVal)}</text>`;}
   if(o.lastHot&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--hot)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
-  pts.forEach((p,i)=>{const hot=o.lastHot&&i===n-1;
-    g+=hot?`<circle cx="${p[0]}" cy="${p[1]}" r="6.5" fill="var(--hot)"/>`:`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--card)" stroke="var(--navy)" stroke-width="2.5"/>`;
+  pts.forEach((p,i)=>{const hot=o.lastHot&&i===n-1, live=o.lastLive&&i===n-1;
+    g+=live?`<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="var(--navy)" stroke="var(--card)" stroke-width="2"/>`:hot?`<circle cx="${p[0]}" cy="${p[1]}" r="6.5" fill="var(--hot)"/>`:`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--card)" stroke="var(--navy)" stroke-width="2.5"/>`;
     g+=`<text x="${p[0]}" y="${p[1]-11}" text-anchor="middle" font-size="${o.vfs||11.5}" font-weight="700" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="${hot?'var(--hot)':'var(--ink)'}">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`;
     if(o.sub&&o.sub[i]&&o.subAxis) g+=`<text x="${p[0]}" y="${H-4}" text-anchor="middle" font-size="10" font-weight="500" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="${hot?'var(--hot)':(o.subCol&&o.subCol[i])||'var(--ink2)'}">${o.sub[i]}</text>`;
     else if(o.sub&&o.sub[i]) g+=`<text x="${p[0]}" y="${p[1]+(o.subDy||19)}" text-anchor="middle" font-size="11" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="${hot?'var(--hot)':'var(--ink2)'}">${o.sub[i]}</text>`;
@@ -466,13 +468,13 @@ function bossHome(){
   const kpiRow=k=>{
     const h=H[k.name]||{}, money=k.name==='하이캡'||k.name==='인보험', unit=money?'천원':(k.name==='가동지사'?'개':'명');
     const proj=k.rate*PACE, diff=k.rate-M.baseRate, d1=D.d1[k.name]||0, left=Math.max(0,k.target-k.actual);
-    // 실적 있는 달만 + 11월 월말예상
+    // 실적 있는 달만 + 11월 현재실적 (월말예상은 적색 점선)
     let lab=[],val=[],ref=[],rt=[];
     ms.forEach((m,i)=>{const a=h['실적']?.[i]; if(a!=null&&a!==''){lab.push(m);val.push(+a);ref.push(+(h['목표']?.[i]||0));rt.push(h['달성율']?.[i]);}});
     const keep=narrow?4:12; lab=lab.slice(-keep);val=val.slice(-keep);ref=ref.slice(-keep);rt=rt.slice(-keep);
-    lab.push('11월 예상');val.push(Math.round(k.actual*PACE));ref.push(k.target);rt.push(proj);
+    lab.push('11월');val.push(k.actual);ref.push(k.target);rt.push(k.rate);
     const sub=rt.map(r=>r!=null?(Math.round(r*1000)/10).toFixed(1)+'%':'');
-    const chart=lineChart(lab,val,{w:chartW()-4,h:124,T:24,B:42,L:30,R:42,fit:true,ref,sub,subAxis:true,curVal:k.actual,subCol:rt.map(r=>r>=1?'var(--navy)':'var(--red)'),vfs:narrow?10.5:11.5,lastHot:true,aria:k.name+' 월별 실적 추이'});
+    const chart=lineChart(lab,val,{w:chartW()-4,h:124,T:24,B:42,L:30,R:58,fit:true,ref,sub,subAxis:true,projVal:Math.round(k.actual*PACE),lastLive:true,subCol:rt.map(r=>r>=1?'var(--navy)':'var(--red)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 실적 추이'});
     return `<div class="card krow">
       <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
         <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 영업일 기준대비 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
@@ -490,7 +492,7 @@ function bossHome(){
   const totalHw=sum(ms2.map(x=>x.hw)), totalNear=sum(ms2.map(x=>x.near));
   const lapsed=D.agencies.filter(a=>{const n=a.ins.length;return a.ins[n-2]>0&&!(a.ins[n-1]>0)&&MGRS.includes(a.mgr)}).length;
   return `
-  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">점선 목표 · 주황 월말예상 · 남색 현재실적 · 월 아래 % 달성률</span></div>
+  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">회색점선 목표 · 적색점선 월말예상 · 월 아래 % 달성률</span></div>
   <div class="grid" style="gap:10px">${kp}</div>
   <div class="card pad" style="margin-top:10px"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
       <div class="kv">
