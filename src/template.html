@@ -401,6 +401,32 @@ body{letter-spacing:-.01em;font-weight:400}
 .mpace .row .main{min-width:0}.mpace .row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:380px){.mpace .rt.mp{gap:8px}.mpace .rt.mp .v{font-size:12.5px}.mpace .rt.mp .s{font-size:10px}.mpace .row{gap:7px;padding:10px 10px}}
 .go-mgr{display:block;width:100%;margin:10px 0 4px;border:1px solid var(--cardLine);background:var(--card);border-radius:12px;padding:12px;font-family:inherit;font-weight:700;font-size:14px;color:var(--navy);cursor:pointer}
+
+/* 매니저 페이스 표 (앱 스타일) */
+.mt{padding:6px 0 4px;overflow:hidden}
+.mt-h,.mt-r{display:grid;grid-template-columns:minmax(72px,1.15fr) 1.3fr 1.2fr 1fr .8fr .95fr .95fr;align-items:center;column-gap:8px;padding:0 12px}
+.mt-h{padding-top:6px;padding-bottom:8px}
+.mt-h .c{font-family:inherit;font-size:10.5px;font-weight:500;color:var(--ink3);text-align:right;border:0;background:none;padding:0;cursor:pointer;word-break:keep-all;line-height:1.2;letter-spacing:-.03em}
+.mt-h .c.nm{text-align:left;cursor:default}
+.mt-h .c.on{color:var(--navy);font-weight:700}
+.mt-h .c b{font-size:9px;margin-left:1px}
+.mt-r{min-height:44px;cursor:pointer;border-radius:10px;margin:0 6px;padding:0 6px;position:relative}
+.mt-r:not(.mt-t)+.mt-r::before{content:"";position:absolute;left:6px;right:6px;top:0;height:1px;background:var(--line)}
+.mt-r:not(.mt-t):active{background:var(--soft)}
+.mt-r .c{text-align:right;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.mt-r .c i{font-style:normal;font-size:.75em;font-weight:500;color:var(--ink3);margin-left:1px}
+.mt-r .c.nm{display:flex;align-items:center;gap:6px;text-align:left;min-width:0;font-weight:700;font-size:13.5px}
+.mt-r .c.nm span{overflow:hidden;text-overflow:ellipsis}
+.mt-r .c-a3{color:var(--ink2);font-weight:500}
+.mt-r .c-d1{color:var(--navy)}
+.mt-r .c.on{color:var(--navy);font-weight:700}
+.mt-r .na{color:var(--ink3);font-weight:400}
+.mt-t{background:var(--navySoft);cursor:default;margin-bottom:4px;min-height:42px}
+.mt-t .c{color:var(--navy);font-weight:700;font-size:12px}
+.mt-t .c.nm{font-size:13px;color:var(--navy)}
+.tdot{width:24px;height:24px;border-radius:50%;background:var(--navy2);flex:0 0 auto;display:inline-block;position:relative}
+.tdot::after{content:"Σ";position:absolute;inset:0;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+@media (max-width:380px){.mt-h,.mt-r{grid-template-columns:minmax(60px,1.05fr) 1.35fr 1.2fr .95fr .75fr .95fr .9fr;column-gap:4px;padding:0 6px}.mt-t .c{font-size:9.5px}.mt-r .c i{display:none}.mt-r{margin:0 4px;padding:0 4px}.mt-r .c{font-size:10.5px}.mt-r .c.nm{font-size:12px;gap:4px}.mt-h .c{font-size:9.5px}.mt-r .tel,.tdot{width:20px;height:20px}.tel svg{width:9px;height:9px}}
 </style>
 </head>
 <body>
@@ -621,13 +647,23 @@ function bossHome(){
 }
 
 const prev3=x=>{const p=x.m.perf;return sum(p.slice(-4,-1).map(v=>v||0))/3;};
+const MT_COLS=[['a3','3평 실적'],['cur','당월 실적'],['d1','전일 유입'],['r','3평比'],['dz','설계 건수'],['hw','환산 인원']];
 function bossMgr(){
-  const xs=MGRS.map(mgrStat).sort((a,b)=>b.cur-a.cur);
-  return `<div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="hint">현재실적 순 · 금액 천원 · 탭하면 상세</span></div>
-  <div class="card list mpace">${xs.map(x=>{const a3=prev3(x),r=a3?x.cur/a3:0;return `<div class="row" data-mc="${esc(x.m.name)}">${tel(x.m.phone,x.m.name)}
-     <div class="main"><div class="nm">${esc(x.m.name)}</div></div>
-     <div class="rt mp"><div><div class="v sub">${a3?f0(a3):'-'}</div><div class="s">3평실적</div></div><div><div class="v">${f0(x.cur)}</div><div class="s">현재실적</div></div><div><div class="v">${a3?Math.round(r*100)+'<small class="u">%</small>':'-'}</div><div class="s">3평比</div></div><div><div class="v">${f1(x.hw)}<small class="u">명</small></div><div class="s">환산인원</div></div></div>${CHEV}</div>`}).join('')}</div>`;
+  const rows=MGRS.map(n=>{const x=mgrStat(n),a3=prev3(x);return {x,nm:n,a3,cur:x.cur,d1:d1Of('mgr',n,x.cur),r:a3?x.cur/a3:null,dz:x.m.designs||0,hw:x.hw};});
+  const key=st.mtSort||'cur'; rows.sort((p,q)=>((q[key]??-1e15)-(p[key]??-1e15)));
+  const T={a3:sum(rows.map(r=>r.a3)),cur:sum(rows.map(r=>r.cur)),dz:sum(rows.map(r=>r.dz)),hw:sum(rows.map(r=>r.hw))};
+  const hasD1=rows.some(r=>r.d1!=null); T.d1=hasD1?sum(rows.map(r=>r.d1||0)):null; T.r=T.a3?T.cur/T.a3:null;
+  const fm=(k,v)=>v==null?'<span class="na">-</span>':k==='r'?Math.round(v*100)+'<i>%</i>':k==='hw'?f1(v)+'<i>명</i>':k==='d1'?(v>=0?'+':'')+f0(v):f0(v);
+  const cells=r=>MT_COLS.map(([k])=>`<div class="c c-${k}${key===k?' on':''}">${fm(k,r[k])}</div>`).join('');
+  return `<div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="hint">금액 천원 · 항목을 누르면 정렬</span></div>
+  <div class="mt card">
+    <div class="mt-h"><div class="c nm">매니저</div>${MT_COLS.map(([k,l])=>`<button class="c c-${k}${key===k?' on':''}" data-mts="${k}">${l}${key===k?'<b>▾</b>':''}</button>`).join('')}</div>
+    <div class="mt-r mt-t"><div class="c nm"><span class="tdot"></span>지점 계</div>${cells(T)}</div>
+    ${rows.map(r=>`<div class="mt-r" data-mc="${esc(r.nm)}"><div class="c nm">${tel(r.x.m.phone,r.nm)}<span>${esc(r.nm)}</span></div>${cells(r)}</div>`).join('')}
+  </div>
+  ${hasD1?'':'<div class="note">※ 전일유입은 다음 실적표부터 매니저별로 표시돼요.</div>'}`;
 }
+
 function mgrSheet(name){
   const x=mgrStat(name); if(!x) return; const pr=x.prev?(x.proj/x.prev-1):0;
   const head=`<div style="display:flex;align-items:center;gap:10px;padding-right:40px">${tel(x.m.phone,x.m.name)}<div style="font-family:var(--f-disp);font-size:20px">${esc(x.m.name)}</div><span class="tag ${pr>=0?'t-up':'t-dn'}" style="margin-left:auto">전월비 ${pr>=0?'+':''}${Math.round(pr*100)}%</span></div>`;
@@ -859,6 +895,7 @@ function bindIn(root){
   root.querySelectorAll('[data-ag]').forEach(e=>e.onclick=()=>agSheet(e.dataset.ag));
   root.querySelectorAll('[data-tp]').forEach(e=>e.onclick=()=>tpSheet(e.dataset.tp));
   root.querySelectorAll('[data-mc]').forEach(e=>e.onclick=()=>mgrSheet(e.dataset.mc));
+  root.querySelectorAll('[data-mts]').forEach(e=>e.onclick=()=>{st.mtSort=e.dataset.mts;render();});
   root.querySelectorAll('.go-mgr[data-go-mgr]').forEach(e=>e.onclick=()=>{closeSheet();st.role='mgr';st.mgr=e.dataset.goMgr;st.tab='home';render();scrollTo(0,0)});
 }
 function bind(){
