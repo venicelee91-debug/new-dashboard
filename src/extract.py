@@ -142,6 +142,7 @@ snap['plx']={p['code']:{'dz':h.get('dz') or 0,'cn':h.get('cn') or 0,'hw':h.get('
              for p in D['planners'] for h in [p.get('hwx') or {}] if h}
 for m in D['managers']:
     snap['mgr'][m['name']].update({'designs':m.get('designs') or 0,'hicap':m.get('hicap')})
+snap['bh']=D.get('branchHicap')
 snap['agx']={a['name']:{'part':_L(a.get('part')),'m5':_L(a.get('m5')),'m20':_L(a.get('m20')),'dz':_L(a.get('dz'))} for a in D['agencies']}
 # 최초 1회: 엑셀 '전일기준 당월KPI' 표로 전날 KPI 스냅샷 시드
 if not any(d<today for d in hist):
