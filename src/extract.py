@@ -128,6 +128,15 @@ if '설계지원체결현황_설계사' in wb.sheetnames:
     for r in ws.iter_rows(min_row=7,values_only=True):
         c=str(r[4]).strip() if r[4] else None
         if c in pl: pl[c].update({'dzM':[num(v) for v in r[6:14]],'csM':[num(v) for v in r[14:22]],'cs':num(r[21])})
+# 설계지원 인보험 체결실적 = raw_설계지원건별 '설계지원한 실적' 그대로(교차 지원 포함). 지원 매니저별 금액도 보관(천원)
+import collections as _c
+_cs=_c.defaultdict(lambda:_c.defaultdict(float))
+for r in wb['raw_설계지원건별'].iter_rows(min_row=10,values_only=True):
+    if r[12] and r[25]=='Y' and r[14]=='인보험': _cs[str(r[12]).strip()][r[6] or '']+=(r[26] or 0)/1000
+for c,by in _cs.items():
+    if c in pl: pl[c].update({'cs':round(sum(by.values()),2),'csBy':{k:round(v,2) for k,v in by.items()}})
+for p in pl.values():
+    if p['code'] not in _cs and 'csM' in p: p['cs']=0
 D['planners']=[p for p in pl.values() if p['mgr'] not in ('정지혜',)]
 D['designs']=des
 print(len(D['planners']),len(D['agencies']),len(D['designs']),len(D['bridge']),sum(1 for p in D['planners'] if p['tel']),file=sys.stderr)
@@ -149,6 +158,7 @@ snap['plx']={p['code']:{'dz':h.get('dz') or 0,'cn':h.get('cn') or 0,'hw':h.get('
 for m in D['managers']:
     snap['mgr'][m['name']].update({'designs':m.get('designs') or 0,'hicap':m.get('hicap')})
 snap['bh']=D.get('branchHicap')
+snap['plsup']={p['code']:p['csBy'] for p in D['planners'] if p.get('csBy')}
 snap['agx']={a['name']:{'part':_L(a.get('part')),'m5':_L(a.get('m5')),'m20':_L(a.get('m20')),'dz':_L(a.get('dz'))} for a in D['agencies']}
 # 최초 1회: 엑셀 '전일기준 당월KPI' 표로 전날 KPI 스냅샷 시드
 if not any(d<today for d in hist):
