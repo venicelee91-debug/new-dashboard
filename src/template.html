@@ -343,6 +343,24 @@ body{letter-spacing:-.01em;font-weight:400}
 @media (max-width:760px){.top h1{font-size:19.5px!important}}
 @media (max-width:440px){.top h1{font-size:18px!important}.cdate{font-size:10.5px}}
 @media (max-width:380px){.top h1{font-size:16.5px!important}}
+
+/* KPI 카드 A안: 두 줄 머리글 */
+.krow{padding:13px 16px 8px}
+.kh2{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.kh2 .l1{display:flex;align-items:baseline;gap:8px;min-width:0}
+.kh2 .kn{font-family:var(--f-disp);font-size:17px;white-space:nowrap}
+.kh2 .kv0{font-family:var(--f-disp);font-size:19px;letter-spacing:-.01em;white-space:nowrap}
+.kh2 .kv0 small{font-family:var(--f-body);font-size:12px;font-weight:500;color:var(--ink2);margin-left:2px}
+.kh2 .r1{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.kh2 .rate{font-size:21px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
+.kh2 .dlt{font-size:12px;font-weight:600}
+.kh2 .dlt.dn{color:var(--red)} .kh2 .dlt.up{color:var(--green)}
+.kmeta{margin-top:3px;font-size:12px;color:var(--ink3);line-height:1.5}
+.kmeta b{font-weight:600;color:var(--ink2)}
+.kmeta b.left{color:var(--red)} .kmeta b.done{color:var(--green)} .kmeta b.d1{color:var(--navy)}
+.kmeta i{font-style:normal;margin:0 6px;color:var(--line)}
+.kmeta .nw{white-space:nowrap}
+@media (max-width:560px){.kh2 .kn{font-size:16px}.kh2 .kv0{font-size:17px}.kh2 .rate{font-size:19px}.kh2 .dlt{font-size:11px}.kmeta{font-size:11.5px}.kmeta i{margin:0 4px}}
 </style>
 </head>
 <body>
@@ -507,14 +525,12 @@ function bossHome(){
     const rv=rt.map(r=>+r||0), sub=ref.map(v=>f0(v)), sub2=val.map(v=>f0(v));
     const chart=lineChart(lab,rv,{w:chartW()-4,h:129,T:24,B:56,L:12,R:12,edge:8,sub2,sub2Col:'var(--navy)',fit:true,focus:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
     return `<div class="card krow">
-      <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
-        <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 영업일 기준대비 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
-      <div class="kc">${chart}</div>
-      <div class="ks ks2">
-        <div class="rt0"><span>달성률</span><div class="rr"><b class="big">${pct(k.rate)}</b><em>${f0(k.actual)} / ${f0(k.target)}</em></div></div>
-        <div><span>전일유입</span><b>${d1>=0?"+":""}${f0(d1)}</b></div>
-        <div class="${left>0?'left':'done'}"><span>목표까지 남음</span><b>${left>0?f0(left):'달성'}</b></div>
+      <div class="kh2">
+        <div class="l1"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span></div>
+        <div class="r1"><b class="rate">${pct(k.rate)}</b><span class="dlt ${diff>=0?'up':'dn'}">${diff>=0?'▲':'▼'}${Math.abs(diff*100).toFixed(1)}%p</span></div>
       </div>
+      <div class="kmeta">목표 <b>${f0(k.target)}</b><i>·</i>남음 <b class="${left>0?'left':'done'}">${left>0?f0(left):'달성'}</b><i>·</i><span class="nw">전일 <b class="d1">${d1>=0?'+':''}${f0(d1)}</b></span></div>
+      <div class="kc">${chart}</div>
     </div>`;};
   const kp=ORDER.map(n=>D.kpi.find(k=>k.name===n)).filter(Boolean).map(kpiRow).join('');
   const dt=new Date(M.date+'T00:00:00');
@@ -523,7 +539,7 @@ function bossHome(){
   const totalHw=sum(ms2.map(x=>x.hw)), totalNear=sum(ms2.map(x=>x.near));
   const lapsed=D.agencies.filter(a=>{const n=a.ins.length;return a.ins[n-2]>0&&!(a.ins[n-1]>0)&&MGRS.includes(a.mgr)}).length;
   return `
-  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">점선 100% · 월 아래 목표/실적</span></div>
+  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">▲▼ 영업일 기준대비 · 점선 100% · 월 아래 목표/실적</span></div>
   <div class="grid" style="gap:10px">${kp}</div>
   <div class="card pad" style="margin-top:10px"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
       <div class="kv">
