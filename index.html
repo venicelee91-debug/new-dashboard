@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 18:56 KST">
+<meta name="build-time" content="2026-11-07 19:06 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -395,6 +395,7 @@ body{letter-spacing:-.01em;font-weight:400}
 @media (max-width:380px){.tp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:900px){.tp-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .rt.mp{display:flex;gap:18px;text-align:right}.rt.mp>div{min-width:56px}
+.v small.u,b small.u{font-size:.62em;font-weight:500;color:var(--ink3);margin-left:2px}
 </style>
 </head>
 <body>
@@ -612,11 +613,10 @@ function bossHome(){
   <div class="sec-h"><h2>당월 KPI</h2><span class="hint">▲▼ 영업일 기준대비 · 적색점선 진도대비 · 월 아래 목표/실적</span></div>
   <div class="grid" style="gap:10px">${kp}</div>
   ${touchSection()}
-  <div class="note">※ 월말예상 = 현재 실적 ÷ 경과영업일(${M.elapsed}일) × 당월 영업일수(${M.days}일). 월초에는 오차가 커요.</div>
-  <div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="chip-n">${ms2.length}</span><span class="hint">현재실적 순 · 탭하면 매니저 화면</span></div>
+  <div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="hint">현재실적 순 · 탭하면 매니저 화면</span></div>
   <div class="card list">${ms2.map((x,i)=>`<div class="row" data-go-mgr="${esc(x.m.name)}">${tel(x.m.phone,x.m.name)}
      <div class="main"><div class="nm">${esc(x.m.name)}</div></div>
-     <div class="rt mp"><div><div class="v">${manK(x.cur)}</div><div class="s">현재실적</div></div><div><div class="v">${f1(x.hw)}<small class="u">명</small></div><div class="s">환산인원</div></div></div>${CHEV}</div>`).join('')}</div>`;
+     <div class="rt mp"><div><div class="v">${manK(x.cur)}<small class="u">천원</small></div><div class="s">현재실적</div></div><div><div class="v">${f1(x.hw)}<small class="u">명</small></div><div class="s">환산인원</div></div></div>${CHEV}</div>`).join('')}</div>`;
 }
 
 function bossMgr(){
@@ -626,9 +626,9 @@ function bossMgr(){
    return `<div class="card mcard" data-go-mgr="${esc(x.m.name)}"><div class="mh">${tel(x.m.phone,x.m.name)}<span class="n">${esc(x.m.name)}</span><span class="tag t-gy">${x.m.tenure}차월</span>
      <span class="tag ${pr>=0?'t-up':'t-dn'}" style="margin-left:auto">전월비 ${pr>=0?'+':''}${Math.round(pr*100)}%</span></div>
      <div class="mx">
-      <div><span>체결실적</span><b>${manK(x.cur)}</b></div>
-      <div><span>월말예상</span><b style="color:var(--orange)">${manK(x.proj)}</b></div>
-      <div><span>예상구간 지급</span><b>${x.payCp.pay?f0(x.payCp.pay):'-'}</b></div>
+      <div><span>체결실적</span><b>${manK(x.cur)}<small class="u">천원</small></b></div>
+      <div><span>월말예상</span><b style="color:var(--orange)">${manK(x.proj)}<small class="u">천원</small></b></div>
+      <div><span>예상구간 지급</span><b>${x.payCp.pay?f0(x.payCp.pay)+'<small class="u">천원</small>':'-'}</b></div>
       <div><span>환산인원</span><b>${f1(x.hw)}명</b></div>
       <div><span>근접자</span><b style="color:var(--orange)">${x.near}명</b></div>
       <div><span>체결가능 설계</span><b>${x.pend}명</b></div>
@@ -690,26 +690,26 @@ function mgrHome(){
   </div>
   <div class="card prof" style="margin-top:10px"><div class="ph">${tel(m.phone,m.name)}<span class="n">${esc(m.name)}</span><span class="tag t-gy">${m.tenure}차월</span></div>
     <div class="st">
-      <div><span>체결실적</span><b>${f0(x.cur)}</b></div>
+      <div><span>체결실적</span><b>${f0(x.cur)}<small>천원</small></b></div>
       <div><span>환산인원</span><b>${f1(x.hw)}<small>명</small></b></div>
       <div><span>근접자</span><b>${x.near}<small>명</small></b></div>
-      <div class="hl"><span>예상 지급액</span><b>${f0(tot)}</b></div>
-      <div><span>체결 구간</span><b>${x.payCp.pay?f0(x.payCp.pay):'-'}</b></div>
-      <div><span>환산 구간</span><b>${x.payH.pay?f0(x.payH.pay):'-'}</b></div>
+      <div class="hl"><span>예상 지급액</span><b>${f0(tot)}<small>천원</small></b></div>
+      <div><span>체결 구간</span><b>${x.payCp.pay?f0(x.payCp.pay)+'<small>천원</small>':'-'}</b></div>
+      <div><span>환산 구간</span><b>${x.payH.pay?f0(x.payH.pay)+'<small>천원</small>':'-'}</b></div>
     </div>
-    <div class="note" style="margin:10px 0 0">예상 지급액 = 체결실적 월말예상 구간 + 환산인원 현재 구간 (천원)</div>
+    <div class="note" style="margin:10px 0 0">예상 지급액 = 체결실적 월말예상 구간 + 환산인원 현재 구간</div>
   </div>
   <div class="grid g2 st" style="margin-top:10px">
    <div class="card pay"><div class="ph"><span class="ic" style="background:var(--orange)">1</span><h3>체결실적 <span style="font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--ink3)">(설계지원 인보험)</span></h3></div>
-    <div class="cur"><div><div class="v">${manK(x.cur)}</div><div class="u">현재</div></div><div><div class="v" style="font-size:24px;color:var(--orange)">${manK(x.proj)}</div><div class="u">월말예상</div></div><div><div class="v" style="font-size:20px;color:var(--ink2)">${manK(x.prev)}</div><div class="u">10월</div></div></div>
+    <div class="cur"><div><div class="v">${manK(x.cur)}<small class="u">천원</small></div><div class="u">현재</div></div><div><div class="v" style="font-size:24px;color:var(--orange)">${manK(x.proj)}<small class="u">천원</small></div><div class="u">월말예상</div></div><div><div class="v" style="font-size:20px;color:var(--ink2)">${manK(x.prev)}<small class="u">천원</small></div><div class="u">10월</div></div></div>
     ${ladder(x.cur,x.proj,PAY_C,t=>f0(t))}
-    <div class="gap">🎯 ${nc?`<span>다음 구간 <b>${f0(nc.th)}</b>까지 <b>${manK(nc.gap)}</b> 남음 → 지급 <b>${f0(nc.pay)}</b></span>`:'<span>최고 구간 달성!</span>'}</div>
+    <div class="gap">🎯 ${nc?`<span>다음 구간 <b>${f0(nc.th)}천원</b>까지 <b>${manK(nc.gap)}천원</b> 남음 → 지급 <b>${f0(nc.pay)}천원</b></span>`:'<span>최고 구간 달성!</span>'}</div>
     <div class="note">현재 일평균 ${manK(x.cur/M.elapsed)} 체결 중 · ${nextTier(x.proj,PAY_C)?`월말 ${f0(nextTier(x.proj,PAY_C).th)} 구간에 닿으려면 남은 ${M.days-M.elapsed}영업일 동안 일평균 <b>${manK((nextTier(x.proj,PAY_C).th-x.cur)/(M.days-M.elapsed))}</b>`:'최고구간 페이스예요'}</div>
    </div>
    <div class="card pay"><div class="ph"><span class="ic" style="background:var(--navy2)">2</span><h3>유실적 환산인원</h3></div>
     <div class="cur"><div><div class="v">${f1(x.hw)}<small class="u">명</small></div><div class="u">현재</div></div><div><div class="v" style="font-size:24px;color:var(--orange)">${x.near}<small class="u">명</small></div><div class="u">근접자</div></div><div><div class="v" style="font-size:20px;color:var(--ink2)">${x.hws.filter(p=>p.hwx.hw>0).length}<small class="u">명</small></div><div class="u">체결 설계사</div></div></div>
     ${ladder(x.hw,x.hw,PAY_H,t=>t+'명')}
-    <div class="gap">🎯 ${nh?`<span>다음 구간 <b>${nh.th}명</b>까지 <b>${f1(nh.gap)}명</b> 남음 → 지급 <b>${f0(nh.pay)}</b></span>`:'<span>최고 구간 달성!</span>'}</div>
+    <div class="gap">🎯 ${nh?`<span>다음 구간 <b>${nh.th}명</b>까지 <b>${f1(nh.gap)}명</b> 남음 → 지급 <b>${f0(nh.pay)}천원</b></span>`:'<span>최고 구간 달성!</span>'}</div>
     <div class="note">환산기준(설계사 체결실적): 50천원 미만 0.5 · 50~100천원 1 · 100~200천원 1.5 · 200천원 이상 2명</div>
    </div>
   </div>
@@ -816,9 +816,9 @@ function plSheet(code){
   const head=`<div style="display:flex;align-items:center;gap:10px;padding-right:40px">${tel(p.tel,p.name)}<div><div class="disp" style="font-size:20px">${esc(p.name)} <span style="font-size:12px;color:var(--ink3);font-family:var(--f-body)">${p.code}</span></div><div style="font-size:12px;color:var(--ink3)">${esc(p.ag)} · ${esc(p.mgr||'')}${p.tel?' · '+p.tel.replace(/(\d{3})(\d{3,4})(\d{4})/,'$1-$2-$3'):''}</div></div></div>`;
   const nx=nextHw(amt);
   const top=`<div class="kv" style="margin-bottom:10px">
-    <div><span>당월 인보험</span><b>${manK(p.cur)}</b></div>
-    ${h?`<div><span>설계지원 체결</span><b>${manW(amt)}</b></div><div><span>환산인원</span><b style="color:var(--orange)">${base}명</b></div><div><span>다음 환산구간</span><b>${nx?manW(nx.gap)+' 남음':'최고'}</b></div>`:''}
-    ${br?`<div><span>브릿지 ${br.type.replace('대상','')}</span><b style="color:${br.ok==='달성'?'var(--green)':'var(--red)'}">${br.ok==='달성'?'달성':manW((br.type.includes('주력')?br.ju:br.in)[3])+' 남음'}</b></div>`:''}</div>
+    <div><span>당월 인보험</span><b>${manK(p.cur)}<small class="u">천원</small></b></div>
+    ${h?`<div><span>설계지원 체결</span><b>${manW(amt)}<small class="u">천원</small></b></div><div><span>환산인원</span><b style="color:var(--orange)">${base}명</b></div><div><span>다음 환산구간</span><b>${nx?manW(nx.gap)+'<small class="u">천원</small> 남음':'최고'}</b></div>`:''}
+    ${br?`<div><span>브릿지 ${br.type.replace('대상','')}</span><b style="color:${br.ok==='달성'?'var(--green)':'var(--red)'}">${br.ok==='달성'?'달성':manW((br.type.includes('주력')?br.ju:br.in)[3])+'<small class="u">천원</small> 남음'}</b></div>`:''}</div>
   <div class="card pad" style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;color:var(--ink2)">인보험 실적추이 <span style="font-weight:400;color:var(--ink3)">천원 · 월 아래 전월대비</span></div>
     ${(()=>{const lab=[...D.plMonths.slice(-5),'11월'],v=[...p.m.slice(-5),p.cur].map(x=>Math.max(0,x||0));return lineChart(lab,v,trendOpt(v,720,'월별 인보험 추이'));})()}</div>`;
   const dhtml=ds.length?`<div class="sec-h" style="margin-top:4px"><h2>설계 내역</h2><span class="chip-n">${ds.length}</span><span class="hint">체결가능 · 보험료 큰 순</span></div>`+ds.map(d=>{
@@ -836,7 +836,7 @@ function agSheet(name){
   const n=a.ins.length, mx=Math.max(...a.ins.map(v=>Math.max(0,v)),1);
   const pls=PL.filter(p=>p.ag===name).sort((x,y)=>y.cur-x.cur||avg3(y.m)-avg3(x.m));
   const head=`<div style="padding-right:40px"><div class="disp" style="font-size:19px">${esc(name)}</div><div style="font-size:12px;color:var(--ink3)">${esc(a.hq||'')} · 담당 ${esc(MGRS.includes(a.mgr)?a.mgr:'미배정')} · ${esc(a.type)}</div></div>`;
-  const body=`<div class="kv" style="margin-bottom:10px"><div><span>당월 인보험</span><b>${manK(a.ins[n-1])}</b></div><div><span>10월</span><b>${manK(a.ins[n-2])}</b></div><div><span>3개월평균</span><b>${manK(avg3(a.ins.slice(0,n-1)))}</b></div><div><span>철회</span><b style="color:var(--red)">${manK(a.wd)}</b></div></div>
+  const body=`<div class="kv" style="margin-bottom:10px"><div><span>당월 인보험</span><b>${manK(a.ins[n-1])}<small class="u">천원</small></b></div><div><span>10월</span><b>${manK(a.ins[n-2])}<small class="u">천원</small></b></div><div><span>3개월평균</span><b>${manK(avg3(a.ins.slice(0,n-1)))}<small class="u">천원</small></b></div><div><span>철회</span><b style="color:var(--red)">${manK(a.wd)}<small class="u">천원</small></b></div></div>
    <div class="card pad" style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--ink2)">인보험 실적추이 <span style="font-weight:400;color:var(--ink3)">천원 · 월 아래 전월대비</span></div>
    ${(()=>{const k=8,lab=D.agMonths.slice(-k).map(m=>(String(m).slice(4)*1)+'월'),v=a.ins.slice(-k).map(x=>Math.max(0,x||0));return lineChart(lab.slice(-6),v.slice(-6),trendOpt(v.slice(-6),720,'지사 월별 인보험 추이'));})()}</div>
    ${a.part?`<div class="card pad" style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:6px">조직 (명) · 4월→11월</div>
