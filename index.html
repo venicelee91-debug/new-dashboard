@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 17:36 KST">
+<meta name="build-time" content="2026-11-07 18:10 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -362,6 +362,21 @@ body{letter-spacing:-.01em;font-weight:400}
 .kmeta i{font-style:normal;margin:0 6px;color:var(--line)}
 .kmeta .nw{white-space:nowrap}
 @media (max-width:560px){.kh2 .kn{font-size:16px}.kh2 .kv0{font-size:17px}.kh2 .rate{font-size:19px}.kh2 .dlt{font-size:11px}.kmeta{font-size:11.5px}.kmeta i{margin:0 4px}}
+
+/* KPI 머리글 v2: 이름 옆 달성률, 아래 목표·실적·전일·남음 */
+.kh2 .l1{gap:9px}
+.kh2 .rate{font-size:20px}
+.kmeta b.act{color:var(--ink);font-weight:700}
+.kmeta em.u{font-style:normal;font-size:10.5px;color:var(--ink3);margin-left:6px}
+/* 한 줄 요약 띠 */
+.kstrip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:0 0 4px}
+.ks-i{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--card);border:1px solid var(--cardLine);border-radius:10px;padding:8px 2px 7px;text-decoration:none;color:var(--ink)}
+.ks-i span{font-family:var(--f-disp);font-size:12px;color:var(--ink2)}
+.ks-i b{font-size:16px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
+.ks-i em{font-style:normal;font-size:10.5px;font-weight:600}
+.ks-i em.dn{color:var(--red)} .ks-i em.up{color:var(--green)}
+@media (max-width:380px){.ks-i b{font-size:14px}.ks-i span{font-size:11px}}
+.krow{scroll-margin-top:calc(var(--toph,60px) + 44px)}
 </style>
 </head>
 <body>
@@ -422,7 +437,7 @@ function lineChart(labels,vals,o={}){
   let Y=v=>T+(H-T-B)*(1-((v||0)-mn)/(mx-mn));
   if(o.focus){ // 달성률용: 지난 달들 범위를 확대(±3%는 거의 수평, 10%p 이상은 뚜렷), 진행중인 달 낮은 값은 아래 띠에 압축
     const past=vals.slice(0,o.lastLive?n-1:n).map(v=>+v||0), cur=+vals[n-1]||0;
-    let lo=Math.min(...past,1), hi=Math.max(...past,1,cur);
+    let lo=Math.min(...past,1), hi=Math.max(...past,1,cur,o.projVal||0);
     const minSpan=o.minSpan||0.24, pad=(hi-lo)*0.08+0.02; lo-=pad; hi+=pad;
     if(hi-lo<minSpan){const c=(hi+lo)/2; lo=c-minSpan/2; hi=c+minSpan/2;}
     const ph=H-T-B, band=ph*0.24, base=H-B;
@@ -439,7 +454,7 @@ function lineChart(labels,vals,o={}){
   if(o.lastLive&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-dasharray="4 4"/>`;
   if(o.sub2&&o.rowCap){g+=`<text x="2" y="${H-18}" font-size="9.5" fill="var(--ink2)">${o.rowCap[0]}</text><text x="2" y="${H-4}" font-size="9.5" fill="var(--ink3)">${o.rowCap[1]}</text>`;}
   if(o.base!=null&&n>0){const bx=X(n-1),by=Y(o.base),cy=Y(vals[n-1]);g+=`<g opacity=".6"><line x1="${bx-7}" x2="${bx+10}" y1="${by}" y2="${by}" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="${bx}" x2="${bx}" y1="${by}" y2="${cy}" stroke="var(--red)" stroke-width="1.2" stroke-dasharray="2 3"/></g>`;}
-  if(o.projVal!=null&&n>1){const px=X(n-1),py=Y(o.projVal);g+=`<g opacity=".5"><path d="M${pts[n-2][0].toFixed(1)},${pts[n-2][1].toFixed(1)} L${px.toFixed(1)},${py.toFixed(1)}" fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="5 4"/><circle cx="${px}" cy="${py}" r="4.5" fill="var(--card)" stroke="var(--red)" stroke-width="2"/></g><text x="${px}" y="${py-9}" text-anchor="middle" font-size="${(o.vfs||11.5)-1}" fill="var(--red)" opacity=".7">예상 ${f0(o.projVal)}</text>`;}
+  if(o.projVal!=null&&n>1){const px=X(n-1),py=Y(o.projVal);g+=`<g opacity=".5"><path d="M${pts[n-2][0].toFixed(1)},${pts[n-2][1].toFixed(1)} L${px.toFixed(1)},${py.toFixed(1)}" fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="5 4"/><circle cx="${px}" cy="${py}" r="4.5" fill="var(--card)" stroke="var(--red)" stroke-width="2"/></g><text x="${o.edge?px+o.edge:px}" y="${py-9}" text-anchor="${o.edge?'end':'middle'}" font-size="${(o.vfs||11.5)-1}" font-weight="600" fill="#E06B6F" stroke="var(--card)" stroke-width="3" paint-order="stroke" stroke-linejoin="round">${o.projLabel||('예상 '+f0(o.projVal))}</text>`;}
   if(o.lastHot&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--hot)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
   // 칸 간격에 맞춰 글자 크기 자동 축소 (숫자가 길어져도 서로 겹치지 않게)
   const sp=n>1?(W-L-Rr)/(n-1):W, mlen=a=>Math.max(1,...(a||[]).map(x=>String(x||'').length));
@@ -524,13 +539,12 @@ function bossHome(){
     lab.push('11월');val.push(k.actual);ref.push(k.target);rt.push(k.rate);
     const pf=v=>(Math.round(v*1000)/10).toFixed(1)+'%';
     const rv=rt.map(r=>+r||0), sub=ref.map(v=>f0(v)), sub2=val.map(v=>f0(v));
-    const chart=lineChart(lab,rv,{w:chartW()-4,h:129,T:24,B:56,L:12,R:12,edge:8,sub2,sub2Col:'var(--navy)',fit:true,focus:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
-    return `<div class="card krow">
+    const chart=lineChart(lab,rv,{w:chartW()-4,h:129,T:24,B:56,L:12,R:12,edge:8,sub2,sub2Col:'var(--navy)',fit:true,focus:true,projVal:k.rate/M.baseRate,projLabel:'진도대비 '+Math.round(k.rate/M.baseRate*100)+'%',ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
+    return `<div class="card krow" id="kpi-${k.name}">
       <div class="kh2">
-        <div class="l1"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span></div>
-        <div class="r1"><b class="rate">${pct(k.rate)}</b><span class="dlt ${diff>=0?'up':'dn'}">${diff>=0?'▲':'▼'}${Math.abs(diff*100).toFixed(1)}%p</span></div>
+        <div class="l1"><span class="kn">${k.name}</span><b class="rate">${pct(k.rate)}</b><span class="dlt ${diff>=0?'up':'dn'}">${diff>=0?'▲':'▼'}${Math.abs(diff*100).toFixed(1)}%p</span></div>
       </div>
-      <div class="kmeta">목표 <b>${f0(k.target)}</b><i>·</i>남음 <b class="${left>0?'left':'done'}">${left>0?f0(left):'달성'}</b><i>·</i><span class="nw">전일 <b class="d1">${d1>=0?'+':''}${f0(d1)}</b></span></div>
+      <div class="kmeta">목표 <b>${f0(k.target)}</b><i>·</i>실적 <b class="act">${f0(k.actual)}</b><i>·</i><span class="nw">전일 <b class="d1">${d1>=0?'+':''}${f0(d1)}</b></span><i>·</i><span class="nw">남음 <b class="${left>0?'left':'done'}">${left>0?f0(left):'달성'}</b></span><em class="u">${unit}</em></div>
       <div class="kc">${chart}</div>
     </div>`;};
   const kp=ORDER.map(n=>D.kpi.find(k=>k.name===n)).filter(Boolean).map(kpiRow).join('');
@@ -540,7 +554,8 @@ function bossHome(){
   const totalHw=sum(ms2.map(x=>x.hw)), totalNear=sum(ms2.map(x=>x.near));
   const lapsed=D.agencies.filter(a=>{const n=a.ins.length;return a.ins[n-2]>0&&!(a.ins[n-1]>0)&&MGRS.includes(a.mgr)}).length;
   return `
-  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">▲▼ 영업일 기준대비 · 점선 100% · 월 아래 목표/실적</span></div>
+  <div class="kstrip">${ORDER.map(n=>D.kpi.find(k=>k.name===n)).filter(Boolean).map(k=>{const df=k.rate-M.baseRate;return `<a class="ks-i" href="#kpi-${k.name}" data-kj="${k.name}"><span>${k.name}</span><b>${pct(k.rate)}</b><em class="${df>=0?'up':'dn'}">${df>=0?'▲':'▼'}${Math.abs(df*100).toFixed(1)}</em></a>`}).join('')}</div>
+  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">▲▼ 영업일 기준대비 · 적색점선 진도대비 · 월 아래 목표/실적</span></div>
   <div class="grid" style="gap:10px">${kp}</div>
   <div class="card pad" style="margin-top:10px"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
       <div class="kv">
@@ -776,6 +791,7 @@ function bindIn(root){
   root.querySelectorAll('[data-ag]').forEach(e=>e.onclick=()=>agSheet(e.dataset.ag));
 }
 function bind(){
+  document.querySelectorAll('[data-kj]').forEach(e=>e.onclick=ev=>{ev.preventDefault();const t=document.getElementById('kpi-'+e.dataset.kj);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});
   const v=$('#view'); bindIn(v);
   v.querySelectorAll('[data-go-mgr]').forEach(e=>e.onclick=()=>{st.role='mgr';st.mgr=e.dataset.goMgr;st.tab='home';render();scrollTo(0,0)});
   v.querySelectorAll('[data-tab-go]').forEach(e=>e.onclick=()=>{st.tab=e.dataset.tabGo;render();scrollTo(0,0)});
