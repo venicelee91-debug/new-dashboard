@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 18:48 KST">
+<meta name="build-time" content="2026-11-07 18:56 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -116,8 +116,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .row .rt .v{font-family:var(--f-num);font-weight:600;font-size:15px}
 .row .rt .s{font-size:11px;color:var(--ink3)}
 .chev{color:var(--ink3);flex:0 0 auto}
-.tel{flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--greenSoft);color:var(--green);text-decoration:none;border:1px solid transparent}
-.tel svg{width:13px;height:13px}
+.tel{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--greenSoft);color:var(--green);text-decoration:none;border:1px solid transparent}
+.tel svg{width:11px;height:11px}
 .tel:active{transform:scale(.94)}
 .tel.off{background:var(--soft);color:var(--ink3);border-color:var(--line);pointer-events:none}
 .rank{width:22px;flex:0 0 auto;text-align:center;font-family:var(--f-num);font-weight:600;color:var(--ink3);font-size:15px}
@@ -394,6 +394,7 @@ body{letter-spacing:-.01em;font-weight:400}
 .tp-t .cr{font-size:10.5px;color:var(--ink3);word-break:keep-all;line-height:1.35}
 @media (max-width:380px){.tp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:900px){.tp-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.rt.mp{display:flex;gap:18px;text-align:right}.rt.mp>div{min-width:56px}
 </style>
 </head>
 <body>
@@ -603,7 +604,7 @@ function bossHome(){
   const kp=ORDER.map(n=>D.kpi.find(k=>k.name===n)).filter(Boolean).map(kpiRow).join('');
   const dt=new Date(M.date+'T00:00:00');
   // 매니저 요약 랭킹
-  const ms2=MGRS.map(mgrStat).sort((a,b)=>b.proj-a.proj);
+  const ms2=MGRS.map(mgrStat).sort((a,b)=>b.cur-a.cur);
   const totalHw=sum(ms2.map(x=>x.hw)), totalNear=sum(ms2.map(x=>x.near));
   const lapsed=D.agencies.filter(a=>{const n=a.ins.length;return a.ins[n-2]>0&&!(a.ins[n-1]>0)&&MGRS.includes(a.mgr)}).length;
   return `
@@ -612,10 +613,10 @@ function bossHome(){
   <div class="grid" style="gap:10px">${kp}</div>
   ${touchSection()}
   <div class="note">※ 월말예상 = 현재 실적 ÷ 경과영업일(${M.elapsed}일) × 당월 영업일수(${M.days}일). 월초에는 오차가 커요.</div>
-  <div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="chip-n">${ms2.length}</span><span class="hint">월말예상 순 · 탭하면 매니저 화면</span></div>
-  <div class="card list">${ms2.map((x,i)=>`<div class="row" data-go-mgr="${esc(x.m.name)}"><span class="rank ${i<3?'rk1':''}">${i+1}</span>${tel(x.m.phone,x.m.name)}
-     <div class="main"><div class="nm">${esc(x.m.name)} <span class="tag t-gy">${x.m.tenure}차월</span></div><div class="meta">현재 ${manK(x.cur)} · 환산 ${f1(x.hw)}명 · 근접 ${x.near}명</div></div>
-     <div class="rt"><div class="v">${manK(x.proj)}</div><div class="s">월말예상</div></div>${CHEV}</div>`).join('')}</div>`;
+  <div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="chip-n">${ms2.length}</span><span class="hint">현재실적 순 · 탭하면 매니저 화면</span></div>
+  <div class="card list">${ms2.map((x,i)=>`<div class="row" data-go-mgr="${esc(x.m.name)}">${tel(x.m.phone,x.m.name)}
+     <div class="main"><div class="nm">${esc(x.m.name)}</div></div>
+     <div class="rt mp"><div><div class="v">${manK(x.cur)}</div><div class="s">현재실적</div></div><div><div class="v">${f1(x.hw)}<small class="u">명</small></div><div class="s">환산인원</div></div></div>${CHEV}</div>`).join('')}</div>`;
 }
 
 function bossMgr(){
