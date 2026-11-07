@@ -407,7 +407,7 @@ function lineChart(labels,vals,o={}){
     g+=live&&o.liveLeft?`<text x="${p[0]-10}" y="${p[1]+4}" text-anchor="end" font-size="${o.vfs||11.5}" font-weight="700" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" fill="var(--navy)">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`:`<text x="${p[0]}" y="${p[1]-11}" text-anchor="middle" font-size="${o.vfs||11.5}" font-weight="700" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="${hot?'var(--hot)':'var(--ink)'}">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`;
     if(o.sub&&o.sub[i]&&o.subAxis) g+=`<text x="${p[0]}" y="${o.sub2?H-18:H-4}" text-anchor="middle" font-size="10" font-weight="500" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="${hot?'var(--hot)':(o.subCol&&o.subCol[i])||'var(--ink2)'}">${o.sub[i]}</text>`;
     else if(o.sub&&o.sub[i]) g+=`<text x="${p[0]}" y="${p[1]+(o.subDy||19)}" text-anchor="middle" font-size="11" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="${hot?'var(--hot)':'var(--ink2)'}">${o.sub[i]}</text>`;
-    if(o.sub2&&o.sub2[i]) g+=`<text x="${p[0]}" y="${H-4}" text-anchor="middle" font-size="10" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.5" fill="var(--ink3)" opacity=".85">${o.sub2[i]}</text>`;
+    if(o.sub2&&o.sub2[i]) g+=`<text x="${p[0]}" y="${H-4}" text-anchor="middle" font-size="10" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.3" fill="${o.sub2Col||'var(--ink3)'}" font-weight="700">${o.sub2[i]}</text>`;
     g+=`<text x="${p[0]}" y="${o.sub2?H-33:o.subAxis?H-19:H-10}" text-anchor="middle" font-size="11.5" fill="var(--ink3)" stroke="var(--card)" stroke-width="0.5">${labels[i]}</text>`;});
   if(o.curVal!=null){const cx=X(n-1),cy=Y(o.curVal);g+=`<line x1="${cx}" x2="${cx}" y1="${Y(vals[n-1])+7}" y2="${cy-6}" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="2 3"/><circle cx="${cx}" cy="${cy}" r="5.5" fill="var(--navy)" stroke="var(--card)" stroke-width="2"/><text x="${cx-9}" y="${cy+4}" text-anchor="end" font-size="${o.vfs||11.5}" font-weight="700" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="var(--navy)">현재 ${f0(o.curVal)}</text>`;}
   const lg=o.legend?`<div class="legend" style="margin:2px 0 0"><span><i style="background:var(--navy);height:3px;vertical-align:3px"></i>${o.legend[0]}</span>${o.ref?`<span><i style="background:none;border-top:2px dashed var(--ink3);height:0;vertical-align:3px"></i>${o.legend[1]}</span>`:''}${o.lastHot?`<span><i style="background:var(--hot);border-radius:50%"></i>${o.legend[2]}</span>`:''}</div>`:'';
@@ -480,8 +480,8 @@ function bossHome(){
     const keep=narrow?4:12; lab=lab.slice(-keep);val=val.slice(-keep);ref=ref.slice(-keep);rt=rt.slice(-keep);
     lab.push('11월');val.push(k.actual);ref.push(k.target);rt.push(k.rate);
     const pf=v=>(Math.round(v*1000)/10).toFixed(1)+'%';
-    const rv=rt.map(r=>+r||0), sub=val.map(v=>f0(v)), sub2=ref.map(v=>f0(v));
-    const chart=lineChart(lab,rv,{w:chartW()-4,h:138,T:24,B:56,L:30,sub2,R:58,fit:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,base:M.baseRate,baseFmt:v=>Math.round(v*100)+'%',fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
+    const rv=rt.map(r=>+r||0), sub=ref.map(v=>f0(v)), sub2=val.map(v=>f0(v));
+    const chart=lineChart(lab,rv,{w:chartW()-4,h:138,T:24,B:56,L:30,sub2,sub2Col:'var(--navy)',R:58,fit:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,base:M.baseRate,baseFmt:v=>Math.round(v*100)+'%',fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
     return `<div class="card krow">
       <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
         <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 영업일 기준대비 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
@@ -499,7 +499,7 @@ function bossHome(){
   const totalHw=sum(ms2.map(x=>x.hw)), totalNear=sum(ms2.map(x=>x.near));
   const lapsed=D.agencies.filter(a=>{const n=a.ins.length;return a.ins[n-2]>0&&!(a.ins[n-1]>0)&&MGRS.includes(a.mgr)}).length;
   return `
-  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">회색점선 100% · 적색점선 기준진도 · 월 아래 실적/목표</span></div>
+  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">회색점선 100% · 적색점선 기준진도 · 월 아래 목표/실적</span></div>
   <div class="grid" style="gap:10px">${kp}</div>
   <div class="card pad" style="margin-top:10px"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
       <div class="kv">
