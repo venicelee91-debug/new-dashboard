@@ -115,8 +115,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .row .rt .v{font-family:var(--f-num);font-weight:600;font-size:15px}
 .row .rt .s{font-size:11px;color:var(--ink3)}
 .chev{color:var(--ink3);flex:0 0 auto}
-.tel{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--greenSoft);color:var(--green);text-decoration:none;border:1px solid transparent}
-.tel svg{width:11px;height:11px}
+.tel{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--greenSoft);color:var(--green);text-decoration:none;border:1px solid transparent}
+.tel svg{width:10px;height:10px}
 .tel:active{transform:scale(.94)}
 .tel.off{background:var(--soft);color:var(--ink3);border-color:var(--line);pointer-events:none}
 .rank{width:22px;flex:0 0 auto;text-align:center;font-family:var(--f-num);font-weight:600;color:var(--ink3);font-size:15px}
@@ -427,6 +427,26 @@ body{letter-spacing:-.01em;font-weight:400}
 .tdot{width:24px;height:24px;border-radius:50%;background:var(--navy2);flex:0 0 auto;display:inline-block;position:relative}
 .tdot::after{content:"Σ";position:absolute;inset:0;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
 @media (max-width:380px){.mt-h,.mt-r{grid-template-columns:minmax(60px,1.05fr) 1.35fr 1.2fr .95fr .75fr .95fr .9fr;column-gap:4px;padding:0 6px}.mt-t .c{font-size:9.5px}.mt-r .c i{display:none}.mt-r{margin:0 4px;padding:0 4px}.mt-r .c{font-size:10.5px}.mt-r .c.nm{font-size:12px;gap:4px}.mt-h .c{font-size:9.5px}.mt-r .tel,.tdot{width:20px;height:20px}.tel svg{width:9px;height:9px}}
+
+/* 매니저 페이스: 카드형 리스트 (설계지원현황 앱 구조 + 남색 톤) */
+.mt{padding:0;overflow:visible;background:none;border:0;box-shadow:none}
+.mt-h{padding:0 14px 8px!important;margin:0}
+.mt-h .c{text-align:center!important}
+.mt-h .c.nm{text-align:center!important}
+.mt-r{margin:0 0 8px!important;padding:0 14px!important;min-height:58px;background:var(--card);border:1px solid var(--cardLine);border-radius:14px;box-shadow:0 1px 2px rgba(21,26,45,.03)}
+.mt-r::before{display:none!important}
+.mt-r .c{text-align:center}
+.mt-r .c.nm{text-align:left}
+.mt-r:not(.mt-t):active{background:var(--soft)}
+.mt-r .c-cur{font-size:14.5px;font-weight:700;color:var(--navy)}
+.mt-r .c.on{font-weight:700;color:var(--navy)}
+.mt-t{background:var(--navySoft);border-color:#D5DDEE;min-height:52px}
+.mt-t .c,.mt-t .c-cur{font-size:12.5px}
+.rk{font-style:normal;font-size:11px;font-weight:700;color:var(--ink3);width:16px;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.rk.top{color:var(--navy)}
+.tdot{width:20px;height:20px}
+.tdot::after{font-size:10.5px}
+@media (max-width:380px){.mt-h{padding:0 8px 6px!important}.mt-r{padding:0 8px!important;min-height:52px;border-radius:12px}.mt-r .c-cur{font-size:12px}.rk{display:none}.tdot{margin-left:0;width:18px;height:18px}.mt-r .tel{width:18px;height:18px}.mt-r .tel svg{width:8px;height:8px}}
 </style>
 </head>
 <body>
@@ -653,13 +673,13 @@ function bossMgr(){
   const key=st.mtSort||'cur'; rows.sort((p,q)=>((q[key]??-1e15)-(p[key]??-1e15)));
   const T={a3:sum(rows.map(r=>r.a3)),cur:sum(rows.map(r=>r.cur)),dz:sum(rows.map(r=>r.dz)),hw:sum(rows.map(r=>r.hw))};
   const hasD1=rows.some(r=>r.d1!=null); T.d1=hasD1?sum(rows.map(r=>r.d1||0)):null; T.r=T.a3?T.cur/T.a3:null;
-  const fm=(k,v)=>v==null?'<span class="na">-</span>':k==='r'?Math.round(v*100)+'<i>%</i>':k==='hw'?f1(v)+'<i>명</i>':k==='d1'?(v>=0?'+':'')+f0(v):f0(v);
+  const fm=(k,v)=>v==null?'<span class="na">-</span>':k==='r'?Math.round(v*100)+'<i>%</i>':k==='hw'?f1(v):k==='d1'?(v>=0?'+':'')+f0(v):f0(v);
   const cells=r=>MT_COLS.map(([k])=>`<div class="c c-${k}${key===k?' on':''}">${fm(k,r[k])}</div>`).join('');
   return `<div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="hint">금액 천원 · 항목을 누르면 정렬</span></div>
-  <div class="mt card">
+  <div class="mt">
     <div class="mt-h"><div class="c nm">매니저</div>${MT_COLS.map(([k,l])=>`<button class="c c-${k}${key===k?' on':''}" data-mts="${k}">${l}${key===k?'<b>▾</b>':''}</button>`).join('')}</div>
     <div class="mt-r mt-t"><div class="c nm"><span class="tdot"></span>지점 계</div>${cells(T)}</div>
-    ${rows.map(r=>`<div class="mt-r" data-mc="${esc(r.nm)}"><div class="c nm">${tel(r.x.m.phone,r.nm)}<span>${esc(r.nm)}</span></div>${cells(r)}</div>`).join('')}
+    ${rows.map((r,i)=>`<div class="mt-r" data-mc="${esc(r.nm)}"><div class="c nm">${tel(r.x.m.phone,r.nm)}<span>${esc(r.nm)}</span></div>${cells(r)}</div>`).join('')}
   </div>
   ${hasD1?'':'<div class="note">※ 전일유입은 다음 실적표부터 매니저별로 표시돼요.</div>'}`;
 }
