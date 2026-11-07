@@ -447,6 +447,10 @@ body{letter-spacing:-.01em;font-weight:400}
 .tdot{width:20px;height:20px}
 .tdot::after{font-size:10.5px}
 @media (max-width:380px){.mt-h{padding:0 8px 6px!important}.mt-r{padding:0 8px!important;min-height:52px;border-radius:12px}.mt-r .c-cur{font-size:12px}.rk{display:none}.tdot{margin-left:0;width:18px;height:18px}.mt-r .tel{width:18px;height:18px}.mt-r .tel svg{width:8px;height:8px}}
+
+/* 지점 계: 강조 테두리 카드 */
+.mt-t{background:linear-gradient(180deg,#F4F7FD,#E9EEF8);border:1.5px solid var(--navy)!important;box-shadow:0 0 0 3px rgba(28,50,100,.08),0 2px 8px rgba(28,50,100,.08)}
+.mt-h .c.nm{cursor:pointer}
 </style>
 </head>
 <body>
@@ -667,17 +671,19 @@ function bossHome(){
 }
 
 const prev3=x=>{const p=x.m.perf;return sum(p.slice(-4,-1).map(v=>v||0))/3;};
+const MGR_ORDER=['김지혜','박미선','장현화','김세희','곽보미','이슬','김희선','김효진','송혜정']; // 매니저건제순
+const ordIdx=n=>{const i=MGR_ORDER.indexOf(n);return i<0?99:i;};
 const MT_COLS=[['a3','3평 실적'],['cur','당월 실적'],['d1','전일 유입'],['r','3평比'],['dz','설계 건수'],['hw','환산 인원']];
 function bossMgr(){
   const rows=MGRS.map(n=>{const x=mgrStat(n),a3=prev3(x);return {x,nm:n,a3,cur:x.cur,d1:d1Of('mgr',n,x.cur),r:a3?x.cur/a3:null,dz:x.m.designs||0,hw:x.hw};});
-  const key=st.mtSort||'cur'; rows.sort((p,q)=>((q[key]??-1e15)-(p[key]??-1e15)));
+  const key=st.mtSort||'ord'; rows.sort(key==='ord'?((p,q)=>ordIdx(p.nm)-ordIdx(q.nm)):((p,q)=>((q[key]??-1e15)-(p[key]??-1e15))));
   const T={a3:sum(rows.map(r=>r.a3)),cur:sum(rows.map(r=>r.cur)),dz:sum(rows.map(r=>r.dz)),hw:sum(rows.map(r=>r.hw))};
   const hasD1=rows.some(r=>r.d1!=null); T.d1=hasD1?sum(rows.map(r=>r.d1||0)):null; T.r=T.a3?T.cur/T.a3:null;
   const fm=(k,v)=>v==null?'<span class="na">-</span>':k==='r'?Math.round(v*100)+'<i>%</i>':k==='hw'?f1(v):k==='d1'?(v>=0?'+':'')+f0(v):f0(v);
   const cells=r=>MT_COLS.map(([k])=>`<div class="c c-${k}${key===k?' on':''}">${fm(k,r[k])}</div>`).join('');
   return `<div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="hint">금액 천원 · 항목을 누르면 정렬</span></div>
   <div class="mt">
-    <div class="mt-h"><div class="c nm">매니저</div>${MT_COLS.map(([k,l])=>`<button class="c c-${k}${key===k?' on':''}" data-mts="${k}">${l}${key===k?'<b>▾</b>':''}</button>`).join('')}</div>
+    <div class="mt-h"><button class="c nm${key==='ord'?' on':''}" data-mts="ord">매니저${key==='ord'?'<b>▾</b>':''}</button>${MT_COLS.map(([k,l])=>`<button class="c c-${k}${key===k?' on':''}" data-mts="${k}">${l}${key===k?'<b>▾</b>':''}</button>`).join('')}</div>
     <div class="mt-r mt-t"><div class="c nm"><span class="tdot"></span>지점 계</div>${cells(T)}</div>
     ${rows.map((r,i)=>`<div class="mt-r" data-mc="${esc(r.nm)}"><div class="c nm">${tel(r.x.m.phone,r.nm)}<span>${esc(r.nm)}</span></div>${cells(r)}</div>`).join('')}
   </div>
