@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
+<meta name="theme-color" content="#F3F4F7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<title>경기AM지점 현황관리</title>
+<style>
+/*FONTS*/
+:root{
+  /* 환산인원관리 앱 톤: 연회색 바탕 · 흰 카드 · 남색 중심, 주황은 근접/예상치 포인트만 */
+  --navy:#1C3264; --navy2:#1C3264; --orange:#1C3264; --orange2:#4A64A0; --orangeSoft:#E9EDF6;
+  --hot:#E8741C; --hotSoft:#FFF1E6; --red:#D8343A; --green:#1E9E55; --yellow:#FFF4CC;
+  --bg:#F3F4F7; --card:#FFFFFF; --ink:#151A2D; --ink2:#5D6479; --ink3:#9AA0B2; --line:#E5E7EE; --soft:#F3F4F7;
+  --navySoft:#E9EDF6; --redSoft:#FDECEC; --greenSoft:#E6F6EC; --heroSub:rgba(255,255,255,.09);
+  --shadow:0 1px 2px rgba(21,26,45,.04);
+  /* 제목 = 여기어때 잘난고딕 TTF · 글씨 = Noto Sans KR · 숫자 = Roboto (환산인원관리 앱과 동일) */
+  --f-disp:"JalnanTitle","JalnanGothic",sans-serif;
+  --f-body:"JalnanTitle","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:"JalnanTitle","Roboto","Noto Sans KR",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#0F1422; --card:#171E30; --ink:#EEF1F7; --ink2:#AEB5C7; --ink3:#78819A; --line:#263049; --soft:#1D2539;
+  --navy:#9DB6EE; --navy2:#2E4A8A; --orange:#5B7BC4; --orange2:#7D97D3; --orangeSoft:#1F2A47; --hot:#F59A4E; --hotSoft:#3A2717;
+  --navySoft:#1F2A47; --redSoft:#3A1C20; --greenSoft:#163225; --yellow:#3A3218; --heroSub:rgba(255,255,255,.07);
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0F1422; --card:#171E30; --ink:#EEF1F7; --ink2:#AEB5C7; --ink3:#78819A; --line:#263049; --soft:#1D2539;
+  --navy:#9DB6EE; --navy2:#2E4A8A; --orange:#5B7BC4; --orange2:#7D97D3; --orangeSoft:#1F2A47; --hot:#F59A4E; --hotSoft:#3A2717;
+  --navySoft:#1F2A47; --redSoft:#3A1C20; --greenSoft:#163225; --yellow:#3A3218; --heroSub:rgba(255,255,255,.07);
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14.5px;line-height:1.45;padding-bottom:84px}
+button{font-family:inherit;color:inherit}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.disp{font-family:var(--f-body);font-weight:600;letter-spacing:-.02em}
+.big-n{font-family:var(--f-body);font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+
+/* header — 흰 바탕 · 남색 텍스트 */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--card);color:var(--ink);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--card)}
+.top-in{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:10px 16px}
+.badge-title{background:var(--navy2);color:#fff;border-radius:6px;padding:5px 9px;line-height:1.1;text-align:center;font-family:var(--f-disp);font-size:12px;white-space:nowrap}
+.badge-title b{display:block;font-size:14px;font-weight:400}
+.top h1{margin:0;font-family:var(--f-disp);font-weight:400;font-size:20px;line-height:1.1;color:var(--navy)}
+.top .sub{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.role{margin-left:auto;display:flex;gap:6px;align-items:center}
+.seg{display:flex;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--ink2);font-weight:600;font-size:12.5px;padding:7px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--navy2);color:#fff}
+.mgr-sel{appearance:none;border:1px solid var(--line);border-radius:10px;background-color:var(--card);color:var(--navy);font-family:inherit;font-weight:600;font-size:12.5px;padding:8px 28px 8px 12px;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 15px) 52%,calc(100% - 11px) 52%;background-size:4px 4px;background-repeat:no-repeat;cursor:pointer}
+.wrap{max-width:1120px;margin:0 auto;padding:16px}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 12px}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink2)}
+.tabs button.on{background:var(--navy2);border-color:var(--navy2);color:#fff}
+
+/* bottom nav on phones */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);display:none;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+.bnav button{flex:1;border:0;background:none;font-size:11px;font-weight:600;color:var(--ink3);display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer}
+.bnav button svg{width:22px;height:22px}
+.bnav button.on{color:var(--navy)}
+@media (max-width:760px){.bnav{display:flex}.tabs.main{display:none}.top .sub{font-size:11px;white-space:normal;word-break:keep-all}.top h1{font-size:16px;white-space:nowrap}.top-in{gap:8px;padding:9px 12px}.seg button{padding:6px 9px;font-size:12px}.mgr-sel{padding:7px 22px 7px 10px;font-size:12px}}
+@media (max-width:440px){.top-in{flex-wrap:wrap;row-gap:8px}.top h1{font-size:17px}}
+.badge-title{white-space:nowrap}
+
+.sec-h{display:flex;align-items:center;gap:8px;margin:18px 2px 10px}
+.sec-h h2{margin:0;font-family:var(--f-disp);font-weight:400;font-size:17px;color:var(--navy)}
+.sec-h .chip-n{background:var(--orange);color:#fff;font-family:var(--f-body);font-weight:600;font-size:11px;border-radius:5px;padding:3px 6px}
+.sec-h .hint{margin-left:auto;font-size:11.5px;color:var(--ink3);text-align:right}
+.sec-h h2{white-space:nowrap}
+@media (max-width:560px){.sec-h .hint{font-size:10.5px}}
+
+.card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.pad{padding:14px}
+.grid{display:grid;gap:10px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:900px){.g5{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.g2.st{grid-template-columns:1fr}}
+
+/* hero date strip */
+.hero{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--navy2);color:#fff;border-radius:14px;padding:14px 16px;position:relative;overflow:hidden}
+
+.hero .big{font-family:var(--f-num);font-weight:700;letter-spacing:-.01em;font-size:26px;line-height:1}
+.hero .lbl{font-size:11.5px;opacity:.8}
+.hero .prog{flex:1 1 220px;min-width:200px}
+.hero .bar{height:8px;background:rgba(255,255,255,.18);border-radius:9px;overflow:hidden;margin-top:6px}
+.hero .bar i{display:block;height:100%;background:#fff;border-radius:9px}
+
+/* kpi */
+.kpi{padding:12px 13px;position:relative;overflow:hidden}
+.kpi .k-n{font-weight:600;font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:6px}
+.kpi .k-v{font-family:var(--f-num);font-weight:700;letter-spacing:-.01em;font-size:26px;line-height:1.1;margin-top:6px;color:var(--ink)}
+.kpi .k-v small{font-family:var(--f-body);font-size:12px;color:var(--ink3);font-weight:600;margin-left:3px}
+.kpi .k-s{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.pbar{height:7px;background:var(--soft);border-radius:8px;position:relative;margin-top:9px;border:1px solid var(--line)}
+.pbar i{position:absolute;left:0;top:0;bottom:0;border-radius:8px;background:var(--orange)}
+.pbar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--hot);border-radius:2px}
+.tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;border-radius:5px;padding:2px 6px;white-space:nowrap}
+.t-up{background:var(--greenSoft);color:var(--green)}
+.t-dn{background:var(--redSoft);color:var(--red)}
+.t-or{background:var(--hotSoft);color:var(--hot)}
+.t-nv{background:var(--navySoft);color:var(--navy)}
+.t-gy{background:var(--soft);color:var(--ink3);border:1px solid var(--line)}
+.t-yl{background:var(--yellow);color:#9A6A00}
+
+/* lists */
+.list{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:10px;padding:11px 13px;border-top:1px solid var(--line);cursor:pointer}
+.row:first-child{border-top:0}
+.row:hover{background:var(--soft)}
+.row .main{flex:1;min-width:0}
+.row .nm{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.row .meta{font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .rt{text-align:right;flex:0 0 auto}
+.row .rt .v{font-family:var(--f-num);font-weight:600;font-size:15px}
+.row .rt .s{font-size:11px;color:var(--ink3)}
+.chev{color:var(--ink3);flex:0 0 auto}
+.tel{flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--greenSoft);color:var(--green);text-decoration:none;border:1px solid transparent}
+.tel svg{width:13px;height:13px}
+.tel:active{transform:scale(.94)}
+.tel.off{background:var(--soft);color:var(--ink3);border-color:var(--line);pointer-events:none}
+.rank{width:22px;flex:0 0 auto;text-align:center;font-family:var(--f-num);font-weight:600;color:var(--ink3);font-size:15px}
+.rank.rk1{color:var(--orange)}
+
+/* toolbar */
+.tool{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.search{flex:1 1 180px;display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0 10px}
+.search input{border:0;outline:0;background:transparent;font-family:inherit;font-size:14px;padding:9px 0;width:100%;color:var(--ink)}
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pills button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer}
+.pills button.on{background:var(--orange);border-color:var(--orange);color:#fff}
+select.sm{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 8px;font-family:inherit;font-size:12.5px;font-weight:600}
+
+/* pay ladder */
+.pay{padding:16px}
+.pay .ph{display:flex;align-items:center;gap:8px}
+.pay .ph .ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--f-body);font-weight:600;color:#fff;font-size:15px}
+.pay .ph h3{margin:0;font-family:var(--f-disp);font-weight:400;font-size:17px}
+.pay .cur{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:8px;margin:12px 0 4px}
+.pay .cur>div{min-width:0;white-space:nowrap}
+@media (max-width:560px){.pay .cur .v{font-size:24px!important}.pay .cur>div:nth-child(n+2) .v{font-size:18px!important}}
+.pay .cur .v{font-family:var(--f-num);font-weight:700;letter-spacing:-.01em;font-size:30px;line-height:1}
+.pay .cur .u{font-size:13px;color:var(--ink3);font-weight:600}
+.ladder{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;margin-top:14px}
+.lb{position:relative;background:var(--soft);border:2px solid transparent;border-radius:6px;padding:8px 4px 7px;text-align:center;font-variant-numeric:tabular-nums}
+.lb .t{font-size:12.5px;font-weight:600;color:var(--ink3);line-height:1.2}
+.lb .p{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.lb.hit{background:var(--card);border:2px solid var(--navy)}
+.lb.hit .t{color:var(--navy)} .lb.hit .p{color:var(--navy);font-weight:600}
+.lb.pace{background:var(--card);border:1.5px dashed var(--orange2)}
+.lb.pace .t{color:var(--ink2)}
+.nowb{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--navy2);color:#fff;font-size:9.5px;font-weight:600;border-radius:4px;padding:1px 5px;white-space:nowrap}
+.lg-hit{background:var(--card);border:2px solid var(--navy);box-sizing:border-box}
+.lg-pace{background:var(--card);border:2px dashed var(--orange2);box-sizing:border-box}
+.gap{margin-top:12px;background:var(--navySoft);border-radius:10px;padding:10px 12px;font-size:13px;display:flex;gap:8px;align-items:center}
+.gap b{color:var(--orange)}
+.sum{background:var(--navy2);color:#fff;border-radius:14px;padding:16px;display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.sum .v{font-family:var(--f-num);font-weight:700;letter-spacing:-.01em;font-size:30px;line-height:1}
+.sum .l{font-size:11.5px;opacity:.78}
+.sum .sep{width:1px;align-self:stretch;background:rgba(255,255,255,.18)}
+
+/* chart */
+.bars{display:flex;align-items:flex-end;gap:4px;height:120px;padding-top:16px}
+.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;min-width:0}
+.bars .b i{display:block;width:100%;max-width:30px;background:var(--navySoft);border-radius:4px 4px 2px 2px;position:relative}
+.bars .b.hi i{background:var(--orange)}
+.bars .b.cur i{background:repeating-linear-gradient(135deg,var(--orange) 0 4px,var(--orange2) 4px 8px)}
+.bars .b span{font-size:10px;color:var(--ink3);font-family:var(--f-num);white-space:nowrap}
+@media (max-width:560px){.bars .b em{font-size:8px;letter-spacing:-.04em}.bars{gap:2px}}
+.bars .b em{font-style:normal;font-size:9.5px;color:var(--ink2);font-family:var(--f-num);white-space:nowrap}
+
+/* sheet */
+.dim{position:fixed;inset:0;background:rgba(10,16,32,.45);z-index:50;opacity:0;pointer-events:none;transition:.2s}
+.dim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,105%);width:min(720px,100%);max-height:88vh;background:var(--bg);z-index:51;border-radius:18px 18px 0 0;transition:transform .25s ease;display:flex;flex-direction:column}
+.sheet:not(.on){visibility:hidden;transition:transform .25s ease,visibility 0s .25s}
+.sheet.on{transform:translate(-50%,0)}
+.sheet .sh-h{padding:12px 16px 12px;background:var(--card);border-radius:18px 18px 0 0;border-bottom:1px solid var(--line);position:relative}
+.sheet .sh-h::before{content:"";display:block;width:40px;height:4px;border-radius:4px;background:var(--line);margin:0 auto 10px}
+.sheet .sh-b{overflow:auto;padding:12px 16px calc(20px + env(safe-area-inset-bottom))}
+.sheet .x{position:absolute;right:12px;top:14px;border:0;background:var(--soft);width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:var(--ink2)}
+.dz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px;position:relative}
+.dz.ok{border-left:4px solid var(--green)}
+.dz.go{border-left:4px solid var(--orange)}
+.dz.no{border-left:4px solid var(--red);opacity:.75}
+.dz.sm{border-left:4px solid var(--ink3)}
+.dz .p{font-weight:600;font-size:13.5px;margin:4px 0 2px;word-break:keep-all}
+.dz .m{font-size:11.5px;color:var(--ink3)}
+.dz .pr{position:absolute;right:12px;top:11px;text-align:right}
+.dz .pr b{font-family:var(--f-num);font-size:15px}
+.kv{display:flex;flex-wrap:wrap;gap:8px}
+.kv div{flex:1 1 90px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.kv div span{display:block;font-size:11px;color:var(--ink3)}
+.kv div b{font-family:var(--f-num);font-size:16px}
+.empty{padding:28px 10px;text-align:center;color:var(--ink3);font-size:13px}
+.note{font-size:11.5px;color:var(--ink3);margin:8px 2px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);margin:4px 2px 10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.mcard{padding:13px;cursor:pointer;transition:transform .12s}
+.mcard:hover{transform:translateY(-1px)}
+.mcard .mh{display:flex;align-items:center;gap:8px}
+.mcard .mh .n{font-family:var(--f-body);font-weight:600;font-size:18px}
+.mcard .mx{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.mcard .mx div{background:var(--soft);border-radius:8px;padding:7px 8px}
+.mcard .mx span{display:block;font-size:10.5px;color:var(--ink3)}
+.mcard .mx b{font-family:var(--f-num);font-size:14px}
+.spark{display:inline-block;vertical-align:middle}
+.theme-btn{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px}
+
+b,strong{font-weight:600}
+body{font-weight:400}
+.vchart{width:100%;height:auto;display:block;margin-top:6px}
+.lchart{width:100%;height:auto;display:block;margin-top:4px;overflow:visible;font-variant-numeric:tabular-nums}
+.vchart text{font-family:var(--f-body);fill:var(--ink3);font-size:10px}
+.vchart .lbl{fill:var(--ink2);font-weight:600;font-size:10px}
+.vchart .lbl.hit{fill:var(--navy)}
+.vchart .gl{stroke:var(--line);stroke-width:1}
+.vchart .gl100{stroke:var(--navy);stroke-width:1;stroke-dasharray:3 3}
+.vchart .bt{fill:#DCE1EC}
+.vchart .ba{fill:var(--orange)}
+.vchart .bm{fill:var(--hot);opacity:.35}
+
+/* 환산인원관리 앱 표기: 라벨 회색 작은 글씨 / 값 Roboto 굵게 / 단위는 작게 */
+h1,h2,h3{letter-spacing:-.02em}
+.row .nm{font-weight:700}
+.row .rt .v,.kv div b,.mcard .mx b,.lb .t,.lb .p,.tag,.chip-n,.pills button,.k-s b,.gap b{font-family:var(--f-num)}
+.row .rt .v,.kv div b,.mcard .mx b{font-weight:700}
+.kv div span,.mcard .mx span{font-size:12px;color:var(--ink2)}
+.kv div b{font-size:18px}
+small.u,.u-s{font-family:var(--f-num);font-size:.6em;font-weight:500;margin-left:2px;color:inherit}
+.prof{padding:16px}
+.prof .ph{display:flex;align-items:center;gap:10px}
+.prof .ph .n{font-size:20px;font-weight:700}
+.prof .st{display:flex;flex-wrap:wrap;gap:14px 26px;margin-top:12px}
+.prof .st div span{display:block;font-size:12px;color:var(--ink2)}
+.prof .st div b{font-family:var(--f-num);font-size:22px;font-weight:700;color:var(--ink)}
+.prof .st div b small{font-family:var(--f-num);font-size:14px;font-weight:500;margin-left:1px}
+.prof .st div.hl b{color:var(--navy)}
+.lchart{width:100%;height:auto;max-width:100%}
+.kv4 div{flex:1 1 0;min-width:0}
+
+/* 초화면: 기준일 바 (음영 없이) + KPI 행 */
+.datebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:4px 2px 12px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.datebar .d{font-size:17px;font-weight:700;color:var(--ink)}
+.datebar .d b{font-family:var(--f-num);color:var(--navy)}
+.datebar .m{font-size:13.5px;color:var(--ink2)}
+.datebar .m b{font-family:var(--f-num);color:var(--ink);font-weight:700}
+.datebar .tr{flex:1 1 160px;min-width:140px;max-width:320px;margin-left:auto;height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.datebar .tr i{display:block;height:100%;background:var(--navy2);border-radius:6px}
+.krow{padding:14px 16px 12px}
+.krow .kh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.krow .kh .kn{font-size:16px;font-weight:700}
+.krow .kh .kv0{font-family:var(--f-num);font-size:22px;font-weight:700;color:var(--ink)}
+.krow .kh .kv0 small{font-size:12.5px;font-weight:500;color:var(--ink2);margin-left:2px}
+.krow .kh .tag{margin-left:auto;align-self:center}
+.krow .kc{margin:2px -4px 0}
+.krow .ks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px;padding-top:10px;border-top:1px dashed var(--line)}
+.krow .ks div span{display:block;font-size:12px;color:var(--ink2)}
+.krow .ks div b{font-family:var(--f-num);font-size:16px;font-weight:700}
+.krow .ks div.left b{color:var(--red)}
+.krow .ks div.done b{color:var(--green)}
+.krow .kp{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:var(--ink2)}
+.krow .kp .pbar{flex:1;margin:0}
+.krow .kp b{font-family:var(--f-num)}
+@media (max-width:560px){.krow .ks{gap:4px}.krow .ks div span{font-size:11px;white-space:nowrap}.krow .ks div b{font-size:14px}}
+
+/* 흰 바탕 섹션 테두리 */
+:root{--cardLine:#DDE0E7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cardLine:#2C3650}}
+:root[data-theme="dark"]{--cardLine:#2C3650}
+.card,.kv div,.dz,.search,.tabs button:not(.on),.pills button:not(.on),select.sm{border:1px solid var(--cardLine)}
+.dz.ok,.dz.go,.dz.no,.dz.sm{border-top:1px solid var(--cardLine);border-right:1px solid var(--cardLine);border-bottom:1px solid var(--cardLine)}
+
+.ttl{min-width:0;flex:1 1 auto}
+html,body{overflow-x:hidden}
+
+.tline{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.cdate{font-size:11.5px;color:var(--ink3);font-weight:500;white-space:nowrap}
+.top .sub b{font-family:var(--f-num);color:var(--ink2);font-weight:700}
+#view>.sec-h:first-child{margin-top:0}
+
+.krow{padding:12px 16px 10px}
+.krow .ks2{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:6px;padding-top:8px;align-items:end}
+.krow .ks2 .rr{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.krow .ks2 .rr b.big{font-family:var(--f-num);font-size:24px;font-weight:700;color:var(--navy);line-height:1.1}
+.krow .ks2 .rr em{font-style:normal;font-family:var(--f-num);font-size:11.5px;color:var(--ink3);white-space:nowrap}
+@media (max-width:560px){.krow .ks2{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr) minmax(0,1.1fr);gap:6px}.krow .ks2 .rr b.big{font-size:20px}.krow .ks2 .rr{gap:0 4px;flex-wrap:nowrap}.krow .ks2 .rr em{font-size:10px;letter-spacing:-.02em}.krow .ks2 div b{font-size:14px}}
+
+/* 본문까지 잘난고딕 TTF: 굵기가 한 가지뿐이라 가짜 볼드는 끄고,
+   작은 글씨는 바탕색 외곽선으로 획을 깎아 얇게 보이게 함 */
+html{font-synthesis:none}
+body{--tbg:var(--bg);-webkit-text-stroke:.45px var(--tbg)}
+.top,.card,.sheet .sh-h,.kv div,.dz,.search,.tabs button,.pills button,select.sm,.bnav,.mgr-sel,.lb.hit,.lb.pace,.theme-btn{--tbg:var(--card)}
+.lb,.seg,.mcard .mx div{--tbg:var(--soft)}
+.seg button.on,.tabs button.on,.pills button.on,.chip-n,.nowb,.sum,.hero,.ic{--tbg:var(--navy2)}
+.t-up{--tbg:var(--greenSoft)} .t-dn{--tbg:var(--redSoft)} .t-or{--tbg:var(--hotSoft)} .t-nv{--tbg:var(--navySoft)} .t-gy{--tbg:var(--soft)} .t-yl{--tbg:var(--yellow)} .gap{--tbg:var(--navySoft)}
+.tag,.pills button,.tabs button,.seg button,.bnav button{-webkit-text-stroke:.4px var(--tbg)}
+/* 중간 글씨는 살짝만, 큰 글씨·제목은 원래 굵기 */
+.row .nm,.row .rt .v,.kv div b,.krow .ks div b,.mcard .mx b,.prof .ph .n,.lb .t{-webkit-text-stroke:.25px var(--tbg)}
+h1,h2,h3,.krow .kn,.krow .kv0,.ks2 .big,.kpi .k-v,.hero .big,.pay .cur .v,.sum .v,.prof .st b,.mcard .mh .n,.disp,.badge-title{-webkit-text-stroke:0}
+.sec-h .hint,.note,.meta,.row .meta,.row .rt .s,.kv div span,.krow .ks div span,.ks2 em,.top .sub,.cdate,.legend,.lb .p,.dz .m{-webkit-text-stroke:.5px var(--tbg)}
+body{letter-spacing:-.01em}
+.sec-h .hint{word-break:keep-all;overflow-wrap:anywhere;min-width:0;letter-spacing:-.03em}
+
+/* 실적 숫자 크기 한 단계 축소 (가독성) */
+.krow .kh .kv0{font-size:19px}
+.krow .ks2 .rr b.big{font-size:21px}
+.krow .ks div b{font-size:14.5px}
+.kpi .k-v,.hero .big{font-size:22px}
+.row .rt .v{font-size:14px}
+.kv div b{font-size:15.5px}
+.prof .st div b{font-size:19px}
+.prof .st div b small{font-size:12px}
+.pay .cur .v{font-size:26px}
+.sum .v{font-size:25px}
+.mcard .mx b{font-size:13px}
+.dz .pr b{font-size:14px}
+@media (max-width:560px){
+ .krow .kh .kv0{font-size:17px}
+ .krow .ks2 .rr b.big{font-size:18px}
+ .krow .ks2 div b{font-size:13px}
+ .pay .cur .v{font-size:21px!important}
+ .pay .cur>div:nth-child(n+2) .v{font-size:16px!important}
+ .prof .st div b{font-size:17px}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="ttl"><div class="tline"><h1>경기AM지점 현황관리</h1><span class="cdate" id="cdate"></span></div><div class="sub" id="subt"></div></div>
+  <div class="role">
+    <div class="seg"><button id="rBoss" class="on">지점장</button><button id="rMgr">매니저</button></div>
+    <select class="mgr-sel" id="mgrSel" style="display:none"></select>
+    <button class="theme-btn" id="thBtn" title="라이트/다크 전환" aria-label="라이트/다크 전환"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 13.2A9 9 0 1 1 10.8 3a7 7 0 0 0 10.2 10.2z"/></svg></button>
+  </div>
+</div></header>
+<main class="wrap">
+  <nav class="tabs main" id="tabs"></nav>
+  <div id="view"></div>
+</main>
+<nav class="bnav" id="bnav"></nav>
+<div class="dim" id="dim"></div>
+<section class="sheet" id="sheet" aria-modal="true" role="dialog"><div class="sh-h" id="shH"></div><div class="sh-b" id="shB"></div></section>
+
+<script>
+const D=/*DATA*/;
+/* ---------- 기준표 (설계지원체결현황_매니저 시트) ---------- */
+const PAY_C=[[15000,2800],[14000,2750],[13000,2700],[12000,2650],[11000,2600],[10000,2550],[9000,2500],[8000,2450],[7000,2400],[6000,2350],[5000,2300],[4000,2250],[3000,2200]]; // 체결실적(천원)→지급(천원)
+const PAY_H=[[90,800],[85,750],[80,700],[75,650],[70,600],[65,550],[60,500],[55,450],[50,400],[45,350],[40,300],[35,250],[30,200]]; // 환산인원→지급(천원)
+const INC=[[1.2,150],[1.1,100],[1.0,70]];
+const HW=[[200000,2],[100000,1.5],[50000,1],[1,0.5]]; // 설계사 체결실적(원)→환산
+const M=D.meta, PACE=M.days/M.elapsed;
+/* 전일유입: 직전 마감 스냅샷(D.prev, 날짜 D.prevDate) 대비 증가분. 새 카드에서도 d1Of 사용 */
+const PREV=D.prev||{};
+const d1Of=(kind,key,cur)=>{const p=PREV[kind]; if(!p||!(key in p)) return null; const v=Array.isArray(p[key])?p[key][0]:(typeof p[key]==='object'?p[key].perf:p[key]); return (cur||0)-(v||0);};
+const prevLabel=D.prevDate?`${+D.prevDate.slice(5,7)}/${+D.prevDate.slice(8)} 대비`:'';
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f0=n=>Math.round(n||0).toLocaleString('ko-KR');
+const f1=n=>(Math.round((n||0)*10)/10).toLocaleString('ko-KR',{maximumFractionDigits:1});
+const pct=r=>(Math.round((r||0)*1000)/10).toFixed(1)+'%';
+// 금액 표기: 모두 천원 (입력 단위: 천원 / 원)
+const manK=k=>{const v=k||0; return Math.abs(v)<100&&v!==0? f1(v) : f0(v);}; // 천원 표기
+const manW=w=>manK((w||0)/1000); // 원→천원
+const hwOf=w=>{for(const [t,v] of HW) if(w>=t) return v; return 0;};
+const nextHw=w=>{for(let i=HW.length-1;i>=0;i--) if(w<HW[i][0]) return {th:HW[i][0],v:HW[i][1],gap:HW[i][0]-w}; return null;};
+const tier=(v,T)=>{for(const [t,p] of T) if(v>=t) return {th:t,pay:p}; return {th:0,pay:0};};
+const nextTier=(v,T)=>{for(let i=T.length-1;i>=0;i--) if(v<T[i][0]) return {th:T[i][0],pay:T[i][1],gap:T[i][0]-v}; return null;};
+const TEL='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg>';
+const tel=(p,nm)=>p?`<a class="tel" href="tel:${p}" onclick="event.stopPropagation()" aria-label="${esc(nm)} 전화걸기" title="${p.replace(/(\d{3})(\d{3,4})(\d{4})/,'$1-$2-$3')}">${TEL}</a>`:`<span class="tel off" title="연락처 없음">${TEL}</span>`;
+const CHEV='<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>';
+const spark=(arr,w=64,h=20,col='var(--orange)')=>{const a=arr.map(v=>v||0),mx=Math.max(...a,1),n=a.length;const pts=a.map((v,i)=>`${(i/(n-1))*w},${h-2-(v/mx)*(h-4)}`).join(' ');return `<svg class="spark" width="${w}" height="${h}"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round"/></svg>`;};
+const sum=a=>a.reduce((s,v)=>s+(v||0),0);
+let LC=0;
+const chartW=(max=1120)=>Math.max(300,Math.min(innerWidth,max)-32-30-2);
+/* 실적추이 라인차트: 남색 실선 + 흰 원 마커 + 영역 그라데이션, 점선 = 비교선, 마지막 주황점 = 당월(예상) */
+function lineChart(labels,vals,o={}){
+  const n=labels.length, W=Math.round(o.w||chartW()), H=o.h||170, L=o.L??30, Rr=o.R??34, T=o.T??40, B=o.B??32, id='lg'+(LC++);
+  const all=[...vals,...(o.ref||[]),...(o.curVal!=null?[o.curVal]:[]),...(o.projVal!=null?[o.projVal]:[])].map(v=>v||0), mx0=Math.max(...all,1), mn0=Math.min(...all.filter(v=>v>0)), mn=o.fit?Math.max(0,mn0-(mx0-mn0)*0.35):0, mx=o.fit?mx0+(mx0-mn)*0.08:mx0*1.12;
+  const X=i=>n===1?W/2:L+(W-L-Rr)*i/(n-1), Y=v=>T+(H-T-B)*(1-((v||0)-mn)/(mx-mn));
+  const pts=vals.map((v,i)=>[X(i),Y(v)]);
+  const solidN=(o.lastHot||o.lastLive)?n-1:n;
+  const path=a=>a.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const area=path(pts.slice(0,solidN))+` L${X(solidN-1).toFixed(1)},${H-B} L${X(0).toFixed(1)},${H-B} Z`;
+  let g=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--navy)" stop-opacity=".18"/><stop offset="1" stop-color="var(--navy)" stop-opacity="0"/></linearGradient></defs>`;
+  g+=`<line x1="${L}" x2="${W-Rr}" y1="${H-B}" y2="${H-B}" stroke="var(--line)" stroke-width="1"/>`;
+  if(o.ref) g+=`<path d="${path(o.ref.map((v,i)=>[X(i),Y(v)]))}" fill="none" stroke="var(--ink3)" stroke-width="2" stroke-dasharray="6 5" opacity=".7"/>`;
+  if(solidN>1) g+=`<path d="${area}" fill="url(#${id})"/><path d="${path(pts.slice(0,solidN))}" fill="none" stroke="var(--navy)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(o.lastLive&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-dasharray="4 4"/>`;
+  if(o.projVal!=null&&n>1){const px=X(n-1),py=Y(o.projVal);g+=`<g opacity=".5"><path d="M${pts[n-2][0].toFixed(1)},${pts[n-2][1].toFixed(1)} L${px.toFixed(1)},${py.toFixed(1)}" fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="5 4"/><circle cx="${px}" cy="${py}" r="4.5" fill="var(--card)" stroke="var(--red)" stroke-width="2"/></g><text x="${px}" y="${py-9}" text-anchor="middle" font-size="${(o.vfs||11.5)-1}" fill="var(--red)" opacity=".7" stroke="var(--card)" stroke-width="0.45">예상 ${f0(o.projVal)}</text>`;}
+  if(o.lastHot&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--hot)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
+  pts.forEach((p,i)=>{const hot=o.lastHot&&i===n-1, live=o.lastLive&&i===n-1;
+    g+=live?`<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="var(--navy)" stroke="var(--card)" stroke-width="2"/>`:hot?`<circle cx="${p[0]}" cy="${p[1]}" r="6.5" fill="var(--hot)"/>`:`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--card)" stroke="var(--navy)" stroke-width="2.5"/>`;
+    g+=`<text x="${p[0]}" y="${p[1]-11}" text-anchor="middle" font-size="${o.vfs||11.5}" font-weight="700" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="${hot?'var(--hot)':'var(--ink)'}">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`;
+    if(o.sub&&o.sub[i]&&o.subAxis) g+=`<text x="${p[0]}" y="${H-4}" text-anchor="middle" font-size="10" font-weight="500" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="${hot?'var(--hot)':(o.subCol&&o.subCol[i])||'var(--ink2)'}">${o.sub[i]}</text>`;
+    else if(o.sub&&o.sub[i]) g+=`<text x="${p[0]}" y="${p[1]+(o.subDy||19)}" text-anchor="middle" font-size="11" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="${hot?'var(--hot)':'var(--ink2)'}">${o.sub[i]}</text>`;
+    g+=`<text x="${p[0]}" y="${o.subAxis?H-19:H-10}" text-anchor="middle" font-size="11.5" fill="var(--ink3)" stroke="var(--card)" stroke-width="0.5">${labels[i]}</text>`;});
+  if(o.curVal!=null){const cx=X(n-1),cy=Y(o.curVal);g+=`<line x1="${cx}" x2="${cx}" y1="${Y(vals[n-1])+7}" y2="${cy-6}" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="2 3"/><circle cx="${cx}" cy="${cy}" r="5.5" fill="var(--navy)" stroke="var(--card)" stroke-width="2"/><text x="${cx-9}" y="${cy+4}" text-anchor="end" font-size="${o.vfs||11.5}" font-weight="700" font-family="JalnanTitle,Noto Sans KR,sans-serif" stroke="var(--card)" stroke-width="0.45" paint-order="normal" fill="var(--navy)">현재 ${f0(o.curVal)}</text>`;}
+  const lg=o.legend?`<div class="legend" style="margin:2px 0 0"><span><i style="background:var(--navy);height:3px;vertical-align:3px"></i>${o.legend[0]}</span>${o.ref?`<span><i style="background:none;border-top:2px dashed var(--ink3);height:0;vertical-align:3px"></i>${o.legend[1]}</span>`:''}${o.lastHot?`<span><i style="background:var(--hot);border-radius:50%"></i>${o.legend[2]}</span>`:''}</div>`:'';
+  return `<svg class="lchart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||'실적 추이')}" style="font-family:var(--f-body)">${g}</svg>${lg}`;
+}
+const avg3=m=>sum(m.slice(-3))/3;
+
+/* ---------- 데이터 인덱스 ---------- */
+const MGRS=D.managers.map(m=>m.name);
+const PL=D.planners; const PLC={}; PL.forEach(p=>PLC[p.code]=p);
+const mgrOf=p=>MGRS.includes(p.mgr)?p.mgr:'미배정';
+const hwList=PL.filter(p=>p.hwx);
+function mgrStat(name){
+  const m=D.managers.find(x=>x.name===name);
+  const hws=hwList.filter(p=>p.hwx.mgr===name);
+  const hw=sum(hws.map(p=>p.hwx.hw));
+  const near=hws.filter(p=>p.hwx.near).length;
+  const cur=m.perf[m.perf.length-1]||0, prev=m.perf[m.perf.length-2]||0;
+  const proj=cur*PACE;
+  const ags=D.agencies.filter(a=>a.mgr===name);
+  const pls=PL.filter(p=>p.mgr===name);
+  const pend=hws.filter(p=>(D.designs[p.code]||[]).some(d=>!d.y&&/자율인수|심사승인|조건부/.test(d.st))).length;
+  return {m,hws,hw,near,cur,prev,proj,ags,pls,pend,
+    agIns:sum(ags.map(a=>a.ins[a.ins.length-1])),
+    payC:tier(cur,PAY_C),payCp:tier(proj,PAY_C),payH:tier(hw,PAY_H),
+    active:pls.filter(p=>p.cur>0).length};
+}
+
+/* ---------- 상태 ---------- */
+const st={role:'boss',mgr:MGRS[0],tab:'home',q:'',f:'all',sort:'cur',agMgr:'all'};
+try{const s=JSON.parse(localStorage.getItem('gg-org-app')||'{}'); if(MGRS.includes(s.mgr))st.mgr=s.mgr; if(s.theme)document.documentElement.dataset.theme=s.theme;}catch(e){}
+const save=()=>{try{localStorage.setItem('gg-org-app',JSON.stringify({role:st.role,mgr:st.mgr,theme:document.documentElement.dataset.theme||''}))}catch(e){}};
+
+const IC={
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 12 4l9 7v9h-6v-6H9v6H3z"/></svg>',
+ mgr:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.3 0 4 1.5 4.6 4"/></svg>',
+ ag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-5h6v5M8 10h2M14 10h2"/></svg>',
+ br:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17V9a7 7 0 0 1 14 0v8M9 17v-4M15 17v-4"/></svg>',
+ pay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>',
+ hw:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>',
+ pl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4h8l1 3H7z"/><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 12h6M9 16h4"/></svg>'
+};
+const TABS={boss:[['home','현황',IC.home],['mgr','매니저',IC.mgr],['ag','지사',IC.ag],['br','브릿지',IC.br]],
+            mgr:[['home','내 급여',IC.pay],['hw','환산·근접',IC.hw],['pl','설계사',IC.pl],['br','브릿지',IC.br]]};
+
+function render(){
+  $('#rBoss').classList.toggle('on',st.role==='boss'); $('#rMgr').classList.toggle('on',st.role==='mgr');
+  $('#mgrSel').style.display=st.role==='mgr'?'':'none'; $('#mgrSel').value=st.mgr;
+  {const d=new Date(M.date+'T00:00:00');$('#cdate').textContent=`${d.getMonth()+1}월${d.getDate()}일마감`;
+   $('#subt').innerHTML=`경과영업일 <b>${M.elapsed}/${M.days}</b> · 영업일기준 달성률 <b>${Math.round(M.baseRate*100)}%</b>`;}
+  const t=TABS[st.role]; if(!t.find(x=>x[0]===st.tab)) st.tab='home';
+  const btn=(x,b)=>`<button class="${st.tab===x[0]?'on':''}" data-tab="${x[0]}">${b?x[2]:''}${x[1]}</button>`;
+  $('#tabs').innerHTML=t.map(x=>btn(x)).join(''); $('#bnav').innerHTML=t.map(x=>btn(x,1)).join('');
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{st.tab=b.dataset.tab;st.q='';st.f='all';render();scrollTo(0,0)});
+  const V=st.role==='boss'?{home:bossHome,mgr:bossMgr,ag:bossAg,br:()=>bridgeView(null)}:{home:mgrHome,hw:mgrHw,pl:mgrPl,br:()=>bridgeView(st.mgr)};
+  $('#view').innerHTML=V[st.tab](); bind(); save();
+}
+
+/* ================= 지점장 ================= */
+function bossHome(){
+  const H=D.hist.data, ms=D.hist.months;
+  const ORDER=['하이캡','인보험','인5만','인20만','가동지사'];
+  const narrow=innerWidth<700;
+  const kpiRow=k=>{
+    const h=H[k.name]||{}, money=k.name==='하이캡'||k.name==='인보험', unit=money?'천원':(k.name==='가동지사'?'개':'명');
+    const proj=k.rate*PACE, diff=k.rate-M.baseRate, d1=D.d1[k.name]||0, left=Math.max(0,k.target-k.actual);
+    // 실적 있는 달만 + 11월 현재실적 (월말예상은 적색 점선)
+    let lab=[],val=[],ref=[],rt=[];
+    ms.forEach((m,i)=>{const a=h['실적']?.[i]; if(a!=null&&a!==''){lab.push(m);val.push(+a);ref.push(+(h['목표']?.[i]||0));rt.push(h['달성율']?.[i]);}});
+    const keep=narrow?4:12; lab=lab.slice(-keep);val=val.slice(-keep);ref=ref.slice(-keep);rt=rt.slice(-keep);
+    lab.push('11월');val.push(k.actual);ref.push(k.target);rt.push(k.rate);
+    const sub=rt.map(r=>r!=null?(Math.round(r*1000)/10).toFixed(1)+'%':'');
+    const chart=lineChart(lab,val,{w:chartW()-4,h:124,T:24,B:42,L:30,R:58,fit:true,ref,sub,subAxis:true,projVal:Math.round(k.actual*PACE),lastLive:true,subCol:rt.map(r=>r>=1?'var(--navy)':'var(--red)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 실적 추이'});
+    return `<div class="card krow">
+      <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
+        <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 영업일 기준대비 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
+      <div class="kc">${chart}</div>
+      <div class="ks ks2">
+        <div class="rt0"><span>달성률</span><div class="rr"><b class="big">${pct(k.rate)}</b><em>${f0(k.actual)} / ${f0(k.target)}</em></div></div>
+        <div><span>전일유입</span><b>${d1>=0?"+":""}${f0(d1)}</b></div>
+        <div class="${left>0?'left':'done'}"><span>목표까지 남음</span><b>${left>0?f0(left):'달성'}</b></div>
+      </div>
+    </div>`;};
+  const kp=ORDER.map(n=>D.kpi.find(k=>k.name===n)).filter(Boolean).map(kpiRow).join('');
+  const dt=new Date(M.date+'T00:00:00');
+  // 매니저 요약 랭킹
+  const ms2=MGRS.map(mgrStat).sort((a,b)=>b.proj-a.proj);
+  const totalHw=sum(ms2.map(x=>x.hw)), totalNear=sum(ms2.map(x=>x.near));
+  const lapsed=D.agencies.filter(a=>{const n=a.ins.length;return a.ins[n-2]>0&&!(a.ins[n-1]>0)&&MGRS.includes(a.mgr)}).length;
+  return `
+  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">회색점선 목표 · 적색점선 월말예상 · 월 아래 % 달성률</span></div>
+  <div class="grid" style="gap:10px">${kp}</div>
+  <div class="card pad" style="margin-top:10px"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
+      <div class="kv">
+        <div><span>설계지원 환산인원</span><b>${f1(totalHw)}<small class="u">명</small></b></div>
+        <div><span>근접자 (5만·20만)</span><b style="color:var(--hot)">${totalNear}<small class="u">명</small></b></div>
+        <div><span>전월가동·당월미가동 지사</span><b style="color:var(--red)">${lapsed}<small class="u">곳</small></b></div>
+        <div><span>브릿지 대상 / 달성</span><b>${D.bridge.length} / ${D.bridge.filter(b=>b.ok==='달성').length}</b></div>
+      </div></div>
+  <div class="note">※ 월말예상 = 현재 실적 ÷ 경과영업일(${M.elapsed}일) × 당월 영업일수(${M.days}일). 월초에는 오차가 커요.</div>
+  <div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="chip-n">${ms2.length}</span><span class="hint">월말예상 순 · 탭하면 매니저 화면</span></div>
+  <div class="card list">${ms2.map((x,i)=>`<div class="row" data-go-mgr="${esc(x.m.name)}"><span class="rank ${i<3?'rk1':''}">${i+1}</span>${tel(x.m.phone,x.m.name)}
+     <div class="main"><div class="nm">${esc(x.m.name)} <span class="tag t-gy">${x.m.tenure}차월</span></div><div class="meta">현재 ${manK(x.cur)} · 환산 ${f1(x.hw)}명 · 근접 ${x.near}명</div></div>
+     <div class="rt"><div class="v">${manK(x.proj)}</div><div class="s">월말예상</div></div>${CHEV}</div>`).join('')}</div>`;
+}
+
+function bossMgr(){
+  const xs=MGRS.map(mgrStat);
+  return `<div class="sec-h"><h2>매니저별 현황</h2><span class="chip-n">${xs.length}</span><span class="hint">금액 천원 · 카드를 누르면 매니저 화면으로</span></div>
+  <div class="grid g3">${xs.map(x=>{const pr=x.prev?(x.proj/x.prev-1):0;
+   return `<div class="card mcard" data-go-mgr="${esc(x.m.name)}"><div class="mh">${tel(x.m.phone,x.m.name)}<span class="n">${esc(x.m.name)}</span><span class="tag t-gy">${x.m.tenure}차월</span>
+     <span class="tag ${pr>=0?'t-up':'t-dn'}" style="margin-left:auto">전월비 ${pr>=0?'+':''}${Math.round(pr*100)}%</span></div>
+     <div class="mx">
+      <div><span>체결실적</span><b>${manK(x.cur)}</b></div>
+      <div><span>월말예상</span><b style="color:var(--orange)">${manK(x.proj)}</b></div>
+      <div><span>예상구간 지급</span><b>${x.payCp.pay?f0(x.payCp.pay):'-'}</b></div>
+      <div><span>환산인원</span><b>${f1(x.hw)}명</b></div>
+      <div><span>근접자</span><b style="color:var(--orange)">${x.near}명</b></div>
+      <div><span>체결가능 설계</span><b>${x.pend}명</b></div>
+      <div><span>하이캡배수</span><b>${f1(x.m.hicap)}</b></div>
+      <div><span>설계건수</span><b>${f0(x.m.designs)}</b></div>
+      <div><span>담당지사 / 가동</span><b>${x.ags.length} / ${x.ags.filter(a=>a.ins[a.ins.length-1]>0).length}</b></div>
+     </div>
+     <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--ink3)">체결실적 12월→11월 ${spark(x.m.perf.slice(0,-1),120,22)}</div>
+   </div>`;}).join('')}</div>
+  <div class="note">※ 체결실적 = 설계지원 체결실적(인보험限) · 월말예상 = 현재 ÷ 경과영업일 × 영업일수 · 환산인원 = 설계지원 설계사 체결실적 기준</div>`;
+}
+
+function agRows(list){
+  const n=D.agMonths.length;
+  return list.map(a=>{const c=a.ins[n-1],p=a.ins[n-2],av=avg3(a.ins.slice(0,n-1));
+    const st=c>0?'':p>0?'<span class="tag t-dn">당월미가동</span>':'';
+    return `<div class="row" data-ag="${esc(a.name)}"><div class="main"><div class="nm">${esc(a.name)} ${st}</div>
+     <div class="meta">${esc(MGRS.includes(a.mgr)?a.mgr:'미배정')} · 참여 ${f0(a.part?.[7])} · 5만 ${f0(a.m5?.[7])} · 20만 ${f0(a.m20?.[7])}</div></div>
+     ${spark(a.ins.slice(-7,-1),56,20,'var(--navy)')}
+     <div class="rt"><div class="v">${manK(c)}</div><div class="s">10월 ${manK(p)} · 3평 ${manK(av)}</div></div>${CHEV}</div>`;}).join('')||'<div class="empty">조건에 맞는 지사가 없어요</div>';
+}
+function bossAg(){
+  const n=D.agMonths.length;
+  let L=D.agencies.filter(a=>sum(a.ins)!==0);
+  if(st.agMgr!=='all') L=L.filter(a=>(MGRS.includes(a.mgr)?a.mgr:'미배정')===st.agMgr);
+  if(st.q) L=L.filter(a=>a.name.includes(st.q));
+  if(st.f==='lapse') L=L.filter(a=>a.ins[n-2]>0&&!(a.ins[n-1]>0));
+  if(st.f==='down') L=L.filter(a=>a.ins[n-2]<avg3(a.ins.slice(0,n-2))*0.7);
+  const key={cur:a=>a.ins[n-1],prev:a=>a.ins[n-2],avg:a=>avg3(a.ins.slice(0,n-1))}[st.sort]||(a=>a.ins[n-1]);
+  L.sort((a,b)=>key(b)-key(a));
+  return `<div class="sec-h"><h2>지사(대리점) 현황</h2><span class="chip-n">${L.length}</span><span class="hint">인보험 · 천원</span></div>
+  <div class="tool"><label class="search">🔍<input id="q" placeholder="지사명 검색" value="${esc(st.q)}"></label>
+   <select class="sm" id="agMgr"><option value="all">전체 매니저</option>${[...MGRS,'미배정'].map(m=>`<option ${st.agMgr===m?'selected':''}>${m}</option>`).join('')}</select>
+   <select class="sm" id="sort"><option value="cur" ${st.sort==='cur'?'selected':''}>당월순</option><option value="prev" ${st.sort==='prev'?'selected':''}>10월순</option><option value="avg" ${st.sort==='avg'?'selected':''}>3개월평균순</option></select></div>
+  <div class="pills" style="margin-bottom:10px">${[['all','전체'],['lapse','전월가동·당월미가동'],['down','10월 급감(3평 70%↓)']].map(([k,l])=>`<button data-f="${k}" class="${st.f===k?'on':''}">${l}</button>`).join('')}</div>
+  <div class="card list">${agRows(L)}</div>`;
+}
+
+/* ================= 매니저 ================= */
+function ladder(cur,proj,T,fmt){
+  const asc=[...T].reverse();
+  const now=tier(cur,T).th;
+  return `<div class="ladder">${asc.map(([t,p])=>`<div class="lb ${cur>=t?'hit':proj>=t?'pace':''}">${now===t?'<span class="nowb">현재</span>':''}<div class="t">${fmt(t)}</div><div class="p">${f0(p)}</div></div>`).join('')}</div>
+   <div class="legend" style="margin-top:6px"><span><i class="lg-hit"></i>달성 구간</span><span><i class="lg-pace"></i>월말예상 도달</span><span style="margin-left:auto">윗줄 기준 · 아랫줄 지급액(천원)</span></div>`;
+}
+function mgrHome(){
+  const x=mgrStat(st.mgr), m=x.m;
+  const nc=nextTier(x.cur,PAY_C), nh=nextTier(x.hw,PAY_H);
+  const tot=x.payCp.pay+x.payH.pay;
+  // 환산 상승 후보 (체결 가능 설계 보유 or 근접)
+  const ups=hwCandidates(st.mgr).slice(0,5);
+  return `
+  <div class="card pad"><div class="sec-h" style="margin-top:0"><h2>체결실적 추이</h2><span class="hint">천원 · 최근 6개월 + 11월 예상</span></div>
+   ${(()=>{const k=7, lab=D.mgrMonths.slice(-k), v=m.perf.slice(-k).map(x=>x||0), av=(D.mgrAvg||[]).slice(-k).map(x=>x||0);
+      v[k-1]=x.proj; av[k-1]=av[k-1]*PACE;
+      const sub=v.map((q,i)=>i===k-1?`현재 ${f0(x.cur)}`:(av[i]?Math.round(q/av[i]*100)+'%':''));
+      return lineChart(lab.map((l,i)=>i===k-1?l+' 예상':l),v,{ref:av,sub,lastHot:true,aria:'월별 체결실적 추이',legend:['체결실적','지점 인당평균','11월 월말예상']});})()}
+   <div class="note" style="margin-top:2px">% = 지점 매니저 인당평균 대비</div>
+   <div class="kv kv4" style="margin-top:10px"><div><span>하이캡배수</span><b>${f1(m.hicap)}</b></div><div><span>당월 설계건수</span><b>${f0(m.designs)}</b></div><div><span>담당 지사</span><b>${x.ags.length}곳</b></div><div><span>당월 가동 설계사</span><b>${x.active}명</b></div></div>
+  </div>
+  <div class="card prof" style="margin-top:10px"><div class="ph">${tel(m.phone,m.name)}<span class="n">${esc(m.name)}</span><span class="tag t-gy">${m.tenure}차월</span></div>
+    <div class="st">
+      <div><span>체결실적</span><b>${f0(x.cur)}</b></div>
+      <div><span>환산인원</span><b>${f1(x.hw)}<small>명</small></b></div>
+      <div><span>근접자</span><b>${x.near}<small>명</small></b></div>
+      <div class="hl"><span>예상 지급액</span><b>${f0(tot)}</b></div>
+      <div><span>체결 구간</span><b>${x.payCp.pay?f0(x.payCp.pay):'-'}</b></div>
+      <div><span>환산 구간</span><b>${x.payH.pay?f0(x.payH.pay):'-'}</b></div>
+    </div>
+    <div class="note" style="margin:10px 0 0">예상 지급액 = 체결실적 월말예상 구간 + 환산인원 현재 구간 (천원)</div>
+  </div>
+  <div class="grid g2 st" style="margin-top:10px">
+   <div class="card pay"><div class="ph"><span class="ic" style="background:var(--orange)">1</span><h3>체결실적 <span style="font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--ink3)">(설계지원 인보험)</span></h3></div>
+    <div class="cur"><div><div class="v">${manK(x.cur)}</div><div class="u">현재</div></div><div><div class="v" style="font-size:24px;color:var(--orange)">${manK(x.proj)}</div><div class="u">월말예상</div></div><div><div class="v" style="font-size:20px;color:var(--ink2)">${manK(x.prev)}</div><div class="u">10월</div></div></div>
+    ${ladder(x.cur,x.proj,PAY_C,t=>f0(t))}
+    <div class="gap">🎯 ${nc?`<span>다음 구간 <b>${f0(nc.th)}</b>까지 <b>${manK(nc.gap)}</b> 남음 → 지급 <b>${f0(nc.pay)}</b></span>`:'<span>최고 구간 달성!</span>'}</div>
+    <div class="note">현재 일평균 ${manK(x.cur/M.elapsed)} 체결 중 · ${nextTier(x.proj,PAY_C)?`월말 ${f0(nextTier(x.proj,PAY_C).th)} 구간에 닿으려면 남은 ${M.days-M.elapsed}영업일 동안 일평균 <b>${manK((nextTier(x.proj,PAY_C).th-x.cur)/(M.days-M.elapsed))}</b>`:'최고구간 페이스예요'}</div>
+   </div>
+   <div class="card pay"><div class="ph"><span class="ic" style="background:var(--navy2)">2</span><h3>유실적 환산인원</h3></div>
+    <div class="cur"><div><div class="v">${f1(x.hw)}<small class="u">명</small></div><div class="u">현재</div></div><div><div class="v" style="font-size:24px;color:var(--orange)">${x.near}<small class="u">명</small></div><div class="u">근접자</div></div><div><div class="v" style="font-size:20px;color:var(--ink2)">${x.hws.filter(p=>p.hwx.hw>0).length}<small class="u">명</small></div><div class="u">체결 설계사</div></div></div>
+    ${ladder(x.hw,x.hw,PAY_H,t=>t+'명')}
+    <div class="gap">🎯 ${nh?`<span>다음 구간 <b>${nh.th}명</b>까지 <b>${f1(nh.gap)}명</b> 남음 → 지급 <b>${f0(nh.pay)}</b></span>`:'<span>최고 구간 달성!</span>'}</div>
+    <div class="note">환산기준(설계사 체결실적): 50천원 미만 0.5 · 50~100천원 1 · 100~200천원 1.5 · 200천원 이상 2명</div>
+   </div>
+  </div>
+  <div class="sec-h"><h2>지금 터치하면 오르는 설계사</h2><span class="chip-n">TOP5</span><span class="hint" data-tab-go="hw" style="cursor:pointer;color:var(--orange);font-weight:700">전체보기 ›</span></div>
+  <div class="card list">${ups.map(hwRow).join('')||'<div class="empty">대상이 없어요</div>'}</div>
+`;
+}
+/* 환산 후보: 다음 구간 갭이 작은 순 + 체결 가능 설계 보유 */
+function designsOf(code){return D.designs[code]||[];}
+const canClose=d=>!d.y&&/자율인수|심사승인|조건부|심사대상|심사중/.test(d.st);
+function gainIf(p){ // 체결가능 설계를 보험료 큰 순으로 1건 체결 시 환산 증가
+  const amt=p.hwx?p.hwx.amt:0, ds=designsOf(p.code).filter(d=>canClose(d)&&d.k!=='물보험').sort((a,b)=>b.prem-a.prem);
+  if(!ds.length) return {g:0,ds};
+  return {g:hwOf(amt+ds[0].prem)-hwOf(amt),ds};
+}
+function hwCandidates(mgr){
+  return hwList.filter(p=>p.hwx.mgr===mgr).map(p=>{const nx=nextHw(p.hwx.amt),gi=gainIf(p);
+    const score=(gi.g*100)+(p.hwx.near?60:0)+(gi.ds.length*5)-(nx?nx.gap/10000:0)+(p.hwx.br==='대상'?15:0);
+    return Object.assign({},p,{nx,gi,score});}).filter(p=>p.gi.ds.length||p.hwx.near).sort((a,b)=>b.score-a.score);
+}
+function hwRow(p){
+  const h=p.hwx, nx=p.nx||nextHw(h.amt), gi=p.gi||gainIf(p);
+  return `<div class="row" data-pl="${p.code}">${tel(p.tel,p.name)}<div class="main"><div class="nm">${esc(p.name)}
+    ${h.hw>0?`<span class="tag t-nv">${h.hw}명</span>`:''}${h.near?`<span class="tag t-or">${h.near}</span>`:''}${h.br==='대상'?`<span class="tag t-yl">브릿지 ${esc(h.brType)}</span>`:''}${gi.g>0?`<span class="tag t-up">체결 시 +${gi.g}</span>`:''}</div>
+    <div class="meta">${esc(h.ag)} · 설계 ${h.dz} · 체결 ${h.cn}${gi.ds.length?` · 체결가능 ${gi.ds.length}건`:''}</div></div>
+    <div class="rt"><div class="v" style="${h.amt>0?'':'color:var(--ink3)'}">${h.amt>0?manW(h.amt):'미체결'}</div><div class="s">${h.amt<=0?'체결 시 환산 시작':nx?`${manW(nx.th)}까지 ${manW(nx.gap)}`:'최고구간'}</div></div>${CHEV}</div>`;
+}
+function mgrHw(){
+  let L=hwList.filter(p=>p.hwx.mgr===st.mgr).map(p=>Object.assign({},p,{nx:nextHw(p.hwx.amt),gi:gainIf(p)}));
+  const cnt={all:L.length,near:L.filter(p=>p.hwx.near).length,hit:L.filter(p=>p.hwx.hw>0).length,open:L.filter(p=>p.gi.ds.length).length,zero:L.filter(p=>p.hwx.hw===0).length};
+  if(st.f==='near') L=L.filter(p=>p.hwx.near); else if(st.f==='hit') L=L.filter(p=>p.hwx.hw>0); else if(st.f==='open') L=L.filter(p=>p.gi.ds.length); else if(st.f==='zero') L=L.filter(p=>p.hwx.hw===0);
+  if(st.q) L=L.filter(p=>p.name.includes(st.q)||(p.hwx.ag||'').includes(st.q));
+  L.sort((a,b)=>(b.gi.g-a.gi.g)||((b.hwx.near?1:0)-(a.hwx.near?1:0))||(b.gi.ds.length-a.gi.ds.length)||(b.hwx.amt-a.hwx.amt));
+  const x=mgrStat(st.mgr);
+  return `<div class="hero" style="margin-bottom:12px"><div><div class="lbl">${esc(st.mgr)} 환산인원</div><div class="big">${f1(x.hw)}<small class="u">명</small></div></div>
+    <div class="prog"><div class="lbl">근접자 ${x.near}명 · 체결가능 설계 보유 ${cnt.open}명</div><div class="bar"><i style="width:${Math.min(100,x.hw/90*100)}%"></i></div></div>
+    <div><div class="lbl">다음 구간</div><div class="big">${nextTier(x.hw,PAY_H)?nextTier(x.hw,PAY_H).th+'명':'MAX'}</div></div></div>
+  <div class="tool"><label class="search">🔍<input id="q" placeholder="설계사·지사 검색" value="${esc(st.q)}"></label></div>
+  <div class="pills" style="margin-bottom:10px">${[['all','전체'],['near','근접자'],['open','체결가능 설계'],['hit','환산 발생'],['zero','미체결']].map(([k,l])=>`<button data-f="${k}" class="${st.f===k?'on':''}">${l} ${cnt[k]}</button>`).join('')}</div>
+  <div class="legend"><span><span class="tag t-up">체결 시 +0.5</span> 가장 큰 체결가능 설계 1건 체결 시 환산 증가</span></div>
+  <div class="card list">${L.map(hwRow).join('')||'<div class="empty">해당 설계사가 없어요</div>'}</div>
+  <div class="note">※ 설계사를 누르면 설계 내역이 열려요. 고객명은 일부 가려서 표시합니다.</div>`;
+}
+function mgrPl(){
+  let L=PL.filter(p=>p.mgr===st.mgr);
+  const near=p=>{const w=p.cur*1000;return w>=20000&&w<50000?'5만근접':w>=150000&&w<200000?'20만근접':'';};
+  const cnt={all:L.length,on:L.filter(p=>p.cur>0).length,off:L.filter(p=>!(p.cur>0)&&p.m[6]>0).length,near:L.filter(p=>near(p)).length,new:L.filter(p=>p.new).length};
+  if(st.f==='on') L=L.filter(p=>p.cur>0); else if(st.f==='off') L=L.filter(p=>!(p.cur>0)&&p.m[6]>0); else if(st.f==='near') L=L.filter(p=>near(p)); else if(st.f==='new') L=L.filter(p=>p.new);
+  if(st.q) L=L.filter(p=>p.name.includes(st.q)||(p.ag||'').includes(st.q));
+  const key={cur:p=>p.cur,prev:p=>p.m[6],avg:p=>avg3(p.m)}[st.sort]||(p=>p.cur);
+  L.sort((a,b)=>key(b)-key(a)||avg3(b.m)-avg3(a.m));
+  const shown=L.slice(0,300);
+  return `<div class="sec-h"><h2><span style="font-family:var(--f-body);font-weight:600">${esc(st.mgr)}</span> 담당 설계사</h2><span class="chip-n">${L.length}</span><span class="hint">인보험 · 천원</span></div>
+  <div class="tool"><label class="search">🔍<input id="q" placeholder="설계사·지사 검색" value="${esc(st.q)}"></label>
+   <select class="sm" id="sort"><option value="cur" ${st.sort==='cur'?'selected':''}>당월순</option><option value="prev" ${st.sort==='prev'?'selected':''}>10월순</option><option value="avg" ${st.sort==='avg'?'selected':''}>3개월평균순</option></select></div>
+  <div class="pills" style="margin-bottom:10px">${[['all','전체'],['on','당월가동'],['off','10월가동·당월0'],['near','5만·20만 근접'],['new','신규']].map(([k,l])=>`<button data-f="${k}" class="${st.f===k?'on':''}">${l} ${cnt[k]}</button>`).join('')}</div>
+  <div class="card list">${shown.map(p=>{const nr=near(p);return `<div class="row" data-pl="${p.code}">${tel(p.tel,p.name)}<div class="main"><div class="nm">${esc(p.name)}${p.new?'<span class="tag t-nv">신규</span>':''}${nr?`<span class="tag t-or">${nr}</span>`:''}${p.hwx&&p.hwx.dz?`<span class="tag t-gy">설계 ${p.hwx.dz}</span>`:''}</div>
+    <div class="meta">${esc(p.ag)} · 3평 ${manK(avg3(p.m))}</div></div>${spark(p.m,50,18,'var(--navy)')}
+    <div class="rt"><div class="v" style="${p.cur>0?'':'color:var(--ink3)'}">${manK(p.cur)}</div><div class="s">10월 ${manK(p.m[6])}</div></div>${CHEV}</div>`}).join('')||'<div class="empty">해당 설계사가 없어요</div>'}</div>
+  ${L.length>300?`<div class="note">상위 300명만 표시 중 · 검색으로 좁혀보세요</div>`:''}`;
+}
+
+/* ================= 브릿지 ================= */
+function bridgeView(mgr){
+  let L=D.bridge.filter(b=>!mgr||b.mgr===mgr);
+  const g=b=>b.type.includes('주력')?b.ju:b.in;
+  const cnt={all:L.length,ok:L.filter(b=>b.ok==='달성').length,no:L.filter(b=>b.ok!=='달성').length};
+  if(st.f==='ok') L=L.filter(b=>b.ok==='달성'); if(st.f==='no') L=L.filter(b=>b.ok!=='달성');
+  L.sort((a,b)=>(a.ok==='달성')-(b.ok==='달성')||g(a)[3]-g(b)[3]);
+  const by=mgr?'':`<div class="card pad" style="margin-bottom:10px"><div class="kv">${MGRS.map(m=>{const l=D.bridge.filter(b=>b.mgr===m);return l.length?`<div><span>${m}</span><b>${l.filter(b=>b.ok==='달성').length}<span style="font-size:11px;color:var(--ink3)"> / ${l.length}</span></b></div>`:''}).join('')}</div><div class="note">달성 / 대상</div></div>`;
+  return `<div class="sec-h"><h2>브릿지 달성관리</h2><span class="chip-n">${cnt.all}</span><span class="hint">10/19-31 · 11/1-15 · 남은금액 적은 순</span></div>${by}
+  <div class="pills" style="margin-bottom:10px">${[['all','전체'],['no','미달성'],['ok','달성']].map(([k,l])=>`<button data-f="${k}" class="${st.f===k?'on':''}">${l} ${cnt[k]}</button>`).join('')}</div>
+  <div class="card list">${L.map(b=>{const v=g(b),p=PLC[b.code];return `<div class="row" data-pl="${b.code}">${tel(p?.tel,b.name)}<div class="main"><div class="nm">${esc(b.name)}<span class="tag ${b.type.includes('주력')?'t-or':'t-nv'}">${b.type.replace('대상','')}</span>${b.ok==='달성'?'<span class="tag t-up">달성</span>':''}</div>
+   <div class="meta">${mgr?'':esc(b.mgr)+' · '}${esc(b.ag)} · 1구간 ${manW(v[0])} · 2구간 ${manW(v[1])}</div></div>
+   <div class="rt"><div class="v" style="color:${v[3]>0?'var(--red)':'var(--green)'}">${v[3]>0?manW(v[3]):'완료'}</div><div class="s">${v[3]>0?'남은금액':'시상 '+manW(v[2])}</div></div>${CHEV}</div>`}).join('')||'<div class="empty">대상이 없어요</div>'}</div>`;
+}
+
+/* ================= 상세 시트 ================= */
+function openSheet(h,b){$('#shH').innerHTML=h+'<button class="x" id="shX" aria-label="닫기">×</button>';$('#shB').innerHTML=b;$('#sheet').classList.add('on');$('#dim').classList.add('on');$('#shX').onclick=closeSheet;bindIn($('#shB'));}
+function closeSheet(){$('#sheet').classList.remove('on');$('#dim').classList.remove('on');}
+$('#dim').onclick=closeSheet; document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+
+function plSheet(code){
+  const p=PLC[code]; if(!p) return;
+  const h=p.hwx, ds=designsOf(code).slice().sort((a,b)=>(a.y-b.y)||(canClose(b)-canClose(a))||(b.prem-a.prem));
+  const amt=h?h.amt:0, base=hwOf(amt);
+  const cls=d=>d.y?'ok':canClose(d)?'go':/거절/.test(d.st)?'no':'sm';
+  const lab=d=>d.y?'<span class="tag t-up">체결</span>':canClose(d)?'<span class="tag t-or">체결가능</span>':/거절/.test(d.st)?'<span class="tag t-dn">심사거절</span>':'<span class="tag t-gy">단순설계</span>';
+  const br=D.bridge.find(b=>b.code===code);
+  const head=`<div style="display:flex;align-items:center;gap:10px;padding-right:40px">${tel(p.tel,p.name)}<div><div class="disp" style="font-size:20px">${esc(p.name)} <span style="font-size:12px;color:var(--ink3);font-family:var(--f-body)">${p.code}</span></div><div style="font-size:12px;color:var(--ink3)">${esc(p.ag)} · ${esc(p.mgr||'')}${p.tel?' · '+p.tel.replace(/(\d{3})(\d{3,4})(\d{4})/,'$1-$2-$3'):''}</div></div></div>`;
+  const nx=nextHw(amt);
+  const top=`<div class="kv" style="margin-bottom:10px">
+    <div><span>당월 인보험</span><b>${manK(p.cur)}</b></div>
+    ${h?`<div><span>설계지원 체결</span><b>${manW(amt)}</b></div><div><span>환산인원</span><b style="color:var(--orange)">${base}명</b></div><div><span>다음 환산구간</span><b>${nx?manW(nx.gap)+' 남음':'최고'}</b></div>`:''}
+    ${br?`<div><span>브릿지 ${br.type.replace('대상','')}</span><b style="color:${br.ok==='달성'?'var(--green)':'var(--red)'}">${br.ok==='달성'?'달성':manW((br.type.includes('주력')?br.ju:br.in)[3])+' 남음'}</b></div>`:''}</div>
+  <div class="card pad" style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;color:var(--ink2)">인보험 실적추이 (천원)</div>
+    ${lineChart([...D.plMonths,'당월'],[...p.m,p.cur].map(v=>Math.max(0,v||0)),{w:chartW(720),lastHot:true,aria:'월별 인보험 추이',legend:['월 실적','','당월 진행']})}</div>`;
+  const dhtml=ds.length?`<div class="sec-h" style="margin-top:4px"><h2>설계 내역</h2><span class="chip-n">${ds.length}</span><span class="hint">체결가능 · 보험료 큰 순</span></div>`+ds.map(d=>{
+     const g=(!d.y&&canClose(d)&&d.k!=='물보험')?hwOf(amt+d.prem)-base:0;
+     return `<div class="dz ${cls(d)}">${lab(d)} <span class="tag t-gy">${esc(d.k)}</span>${g>0?` <span class="tag t-up">체결 시 환산 +${g}</span>`:''}
+      <div class="p">${esc(d.p.replace(/\(Hi\d+\).*/,'').replace(/\(해약환급금.*/,''))}</div>
+      <div class="m">피보험자 ${esc(d.i||'-')}${d.c&&d.c!==d.i?' · 계약자 '+esc(d.c):''} · ${esc(d.st)}${d.sig?' · '+esc(d.sig):''}${d.app?' · 청약 '+d.app:''}</div>
+      <div class="m">설계번호 ${esc(d.no)} · 개시 ${d.d}</div>
+      <div class="pr"><b>${manW(d.y?d.cp:d.prem)}</b><div class="m">월납·천원</div></div></div>`}).join('')
+    :'<div class="empty">당월 설계지원 내역이 없어요</div>';
+  openSheet(head,top+dhtml);
+}
+function agSheet(name){
+  const a=D.agencies.find(x=>x.name===name); if(!a) return;
+  const n=a.ins.length, mx=Math.max(...a.ins.map(v=>Math.max(0,v)),1);
+  const pls=PL.filter(p=>p.ag===name).sort((x,y)=>y.cur-x.cur||avg3(y.m)-avg3(x.m));
+  const head=`<div style="padding-right:40px"><div class="disp" style="font-size:19px">${esc(name)}</div><div style="font-size:12px;color:var(--ink3)">${esc(a.hq||'')} · 담당 ${esc(MGRS.includes(a.mgr)?a.mgr:'미배정')} · ${esc(a.type)}</div></div>`;
+  const body=`<div class="kv" style="margin-bottom:10px"><div><span>당월 인보험</span><b>${manK(a.ins[n-1])}</b></div><div><span>10월</span><b>${manK(a.ins[n-2])}</b></div><div><span>3개월평균</span><b>${manK(avg3(a.ins.slice(0,n-1)))}</b></div><div><span>철회</span><b style="color:var(--red)">${manK(a.wd)}</b></div></div>
+   <div class="card pad" style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--ink2)">인보험 실적추이 (천원)</div>
+   ${(()=>{const k=8,lab=D.agMonths.slice(-k).map(m=>(String(m).slice(4)*1)+'월'),v=a.ins.slice(-k).map(x=>Math.max(0,x||0));return lineChart(lab,v,{w:chartW(720),lastHot:true,aria:'지사 월별 인보험 추이',legend:['월 실적','','당월 진행']});})()}</div>
+   ${a.part?`<div class="card pad" style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:6px">조직 (명) · 4월→11월</div>
+     <div class="kv"><div><span>인참여</span><b>${a.part.map(f0).join(' · ')}</b></div></div><div class="kv" style="margin-top:6px"><div><span>인5만</span><b>${a.m5.map(f0).join(' · ')}</b></div></div><div class="kv" style="margin-top:6px"><div><span>인20만</span><b>${a.m20.map(f0).join(' · ')}</b></div></div></div>`:''}
+   <div class="sec-h"><h2>소속 설계사</h2><span class="chip-n">${pls.length}</span></div>
+   <div class="card list">${pls.slice(0,80).map(p=>`<div class="row" data-pl="${p.code}">${tel(p.tel,p.name)}<div class="main"><div class="nm">${esc(p.name)}</div><div class="meta">3평 ${manK(avg3(p.m))}${p.hwx?` · 설계 ${p.hwx.dz}`:''}</div></div><div class="rt"><div class="v">${manK(p.cur)}</div><div class="s">10월 ${manK(p.m[6])}</div></div>${CHEV}</div>`).join('')||'<div class="empty">실적 있는 설계사가 없어요</div>'}</div>`;
+  openSheet(head,body);
+}
+
+/* ---------- 이벤트 ---------- */
+function bindIn(root){
+  root.querySelectorAll('[data-pl]').forEach(e=>e.onclick=()=>plSheet(e.dataset.pl));
+  root.querySelectorAll('[data-ag]').forEach(e=>e.onclick=()=>agSheet(e.dataset.ag));
+}
+function bind(){
+  const v=$('#view'); bindIn(v);
+  v.querySelectorAll('[data-go-mgr]').forEach(e=>e.onclick=()=>{st.role='mgr';st.mgr=e.dataset.goMgr;st.tab='home';render();scrollTo(0,0)});
+  v.querySelectorAll('[data-tab-go]').forEach(e=>e.onclick=()=>{st.tab=e.dataset.tabGo;render();scrollTo(0,0)});
+  v.querySelectorAll('[data-f]').forEach(e=>e.onclick=()=>{st.f=e.dataset.f;render()});
+  const q=$('#q'); if(q){q.oninput=()=>{st.q=q.value.trim();const pos=q.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(pos,pos);};}
+  const s=$('#sort'); if(s) s.onchange=()=>{st.sort=s.value;render()};
+  const am=$('#agMgr'); if(am) am.onchange=()=>{st.agMgr=am.value;render()};
+}
+$('#mgrSel').innerHTML=MGRS.map(m=>`<option>${m}</option>`).join('');
+$('#mgrSel').onchange=e=>{st.mgr=e.target.value;st.f='all';st.q='';render()};
+$('#rBoss').onclick=()=>{st.role='boss';st.tab='home';st.f='all';render()};
+$('#rMgr').onclick=()=>{st.role='mgr';st.tab='home';st.f='all';render()};
+$('#thBtn').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';save()};
+render();
+let _rz,_lw=innerWidth;addEventListener('resize',()=>{clearTimeout(_rz);_rz=setTimeout(()=>{if(Math.abs(innerWidth-_lw)>40){_lw=innerWidth;if(!$('#sheet').classList.contains('on'))render();}},200)});
+</script>
+</body>
+</html>
