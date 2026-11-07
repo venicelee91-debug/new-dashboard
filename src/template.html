@@ -176,7 +176,9 @@ select.sm{border:1px solid var(--line);background:var(--card);color:var(--ink);b
 .sheet:not(.on){visibility:hidden;transition:transform .25s ease,visibility 0s .25s}
 .sheet.on{transform:translate(-50%,0)}
 .sheet .sh-h{padding:12px 16px 12px;background:var(--card);border-radius:18px 18px 0 0;border-bottom:1px solid var(--line);position:relative}
-.sheet .sh-h::before{content:"";display:block;width:40px;height:4px;border-radius:4px;background:var(--line);margin:0 auto 10px}
+.sheet .sh-h::before{content:"";display:block;width:40px;height:5px;border-radius:4px;background:#C9CED9;margin:0 auto 10px}
+.sheet{touch-action:pan-y;overscroll-behavior:contain}
+.sheet .sh-b{overscroll-behavior:contain}
 .sheet .sh-b{overflow:auto;padding:12px 16px calc(20px + env(safe-area-inset-bottom))}
 .sheet .x{position:absolute;right:12px;top:14px;border:0;background:var(--soft);width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:var(--ink2)}
 .dz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px;position:relative}
@@ -779,9 +781,23 @@ function bridgeView(mgr){
 }
 
 /* ================= 상세 시트 ================= */
-function openSheet(h,b){$('#shH').innerHTML=h+'<button class="x" id="shX" aria-label="닫기">×</button>';$('#shB').innerHTML=b;$('#sheet').classList.add('on');$('#dim').classList.add('on');$('#shX').onclick=closeSheet;bindIn($('#shB'));}
-function closeSheet(){$('#sheet').classList.remove('on');$('#dim').classList.remove('on');}
-$('#dim').onclick=closeSheet; document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+function openSheet(h,b){$('#shH').innerHTML=h+'<button class="x" id="shX" aria-label="닫기">×</button>';$('#shB').innerHTML=b;$('#shB').scrollTop=0;
+  const sh=$('#sheet');sh.style.transform='';sh.classList.add('on');$('#dim').classList.add('on');$('#shX').onclick=()=>closeSheet();bindIn($('#shB'));
+  if(!sheetOpen){sheetOpen=true;try{history.pushState({sheet:1},'')}catch(e){}}}
+let sheetOpen=false;
+function closeSheet(fromPop){const sh=$('#sheet');sh.style.transition='';sh.style.transform='';sh.classList.remove('on');$('#dim').classList.remove('on');$('#dim').style.opacity='';
+  if(sheetOpen){sheetOpen=false;if(!fromPop){try{if(history.state&&history.state.sheet)history.back()}catch(e){}}}}
+addEventListener('popstate',()=>{if(sheetOpen)closeSheet(true)});
+$('#dim').onclick=()=>closeSheet(); document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+/* 아래로 스와이프해서 닫기 */
+(()=>{const sh=$('#sheet'),body=$('#shB'),dim=$('#dim');let y0=0,t0=0,dy=0,drag=false,armed=false;
+  sh.addEventListener('touchstart',e=>{if(!sh.classList.contains('on')||e.touches.length>1)return;const inBody=body.contains(e.target);armed=!inBody||body.scrollTop<=0;y0=e.touches[0].clientY;t0=Date.now();dy=0;drag=false;},{passive:true});
+  sh.addEventListener('touchmove',e=>{if(!armed)return;const d=e.touches[0].clientY-y0;
+    if(!drag){if(d>6&&(!body.contains(e.target)||body.scrollTop<=0)){drag=true;sh.style.transition='none';}else if(d<-6){armed=false;return;}else return;}
+    dy=Math.max(0,d);sh.style.transform=`translate(-50%,${dy}px)`;dim.style.opacity=String(Math.max(0,1-dy/(sh.offsetHeight*0.9)));if(e.cancelable)e.preventDefault();},{passive:false});
+  const end=()=>{if(!drag){armed=false;return;}const v=dy/Math.max(1,Date.now()-t0);sh.style.transition='';
+    if(dy>sh.offsetHeight*0.25||v>0.6){sh.style.transform='';closeSheet();}else{sh.style.transform='';dim.style.opacity='';}drag=false;armed=false;};
+  sh.addEventListener('touchend',end);sh.addEventListener('touchcancel',end);})();
 
 function plSheet(code){
   const p=PLC[code]; if(!p) return;
