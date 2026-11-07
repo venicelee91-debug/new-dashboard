@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 20:26 KST">
+<meta name="build-time" content="2026-11-07 20:30 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -468,10 +468,12 @@ body{letter-spacing:-.01em;font-weight:400}
 .mt-h{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--toph,60px) + var(--subh,34px) - 2px);z-index:17;background:var(--bg);padding-top:8px!important;box-shadow:0 -6px 0 var(--bg)}
 
 /* 페이스 표 숫자 키움 */
-.mt-r .c,.mt-r .c-cur,.mt-r .c.on,.mt-r .c-d1,.mt-t .c,.mt-t .c-cur{font-size:13.5px!important}
-.mt-r .c.nm{font-size:14px!important}.mt-t .c.nm{font-size:13.5px!important}
-.mt-r .c .wn{padding:3px 4px;margin:0 -4px}
-@media (max-width:380px){.mt-r .c,.mt-r .c-cur,.mt-r .c.on,.mt-r .c-d1,.mt-t .c,.mt-t .c-cur{font-size:11px!important}.mt-r .c.nm,.mt-t .c.nm{font-size:12px!important}.mt-r .c .wn{padding:2px 2px;margin:0 -2px}}
+.mt-r .c,.mt-r .c-cur,.mt-r .c.on,.mt-r .c-d1,.mt-t .c,.mt-t .c-cur{font-size:14.2px!important}
+.mt-r .c.nm{font-size:14.5px!important}.mt-t .c.nm{font-size:13.5px!important}
+.mt-h,.mt-r{column-gap:7px}
+.mt-r .c .wn{padding:3px 3px;margin:0 -3px}
+.mt-t .c .wn{background:#FBDDDD}
+@media (max-width:380px){.mt-r .c,.mt-r .c-cur,.mt-r .c.on,.mt-r .c-d1,.mt-t .c,.mt-t .c-cur{font-size:11.5px!important}.mt-r .c.nm,.mt-t .c.nm{font-size:12px!important}.mt-h,.mt-r{column-gap:3px}.mt-r .c .wn{padding:2px 2px;margin:0 -2px}}
 </style>
 </head>
 <body>
@@ -702,7 +704,7 @@ function bossMgr(){
   T.hc=D.branchHicap??null;
   const hasD1=rows.some(r=>r.d1!=null); T.d1=hasD1?sum(rows.map(r=>r.d1||0)):null; T.r=T.a3?T.cur/T.a3:null;
   const fm=(k,v)=>v==null?'<span class="na">-</span>':k==='r'?Math.round(v*100)+'<i>%</i>':(k==='hw'||k==='hc')?f1(v):k==='d1'?(v>=0?'+':'')+f0(v):f0(v);
-  const BH=D.branchHicap, warn=(k,r,tot)=>!tot&&((k==='hc'&&BH!=null&&r.hc!=null&&r.hc<BH)||(k==='r'&&r.r!=null&&r.r<M.baseRate));
+  const BH=D.branchHicap, warn=(k,r,tot)=>(k==='r'&&r.r!=null&&r.r<M.baseRate)||(!tot&&((k==='hc'&&BH!=null&&r.hc!=null&&r.hc<BH)||(k==='dz'&&r.dz!=null&&r.dz<300)));
   const cells=(r,tot)=>MT_COLS.map(([k])=>`<div class="c c-${k}${key===k?' on':''}">${warn(k,r,tot)?`<span class="wn">${fm(k,r[k])}</span>`:fm(k,r[k])}</div>`).join('');
   return `<div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="hint">금액 천원 · 항목을 누르면 정렬</span></div>
   <div class="mt">
