@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 19:07 KST">
+<meta name="build-time" content="2026-11-07 19:22 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -396,6 +396,12 @@ body{letter-spacing:-.01em;font-weight:400}
 @media (min-width:900px){.tp-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .rt.mp{display:flex;gap:18px;text-align:right}.rt.mp>div{min-width:56px}
 .v small.u,b small.u{font-size:.62em;font-weight:500;color:var(--ink3);margin-left:2px}
+
+.mpace .rt.mp{gap:12px}.mpace .rt.mp>div{min-width:0}
+.mpace .rt.mp .v{font-size:14px}.mpace .rt.mp .v.sub{color:var(--ink2);font-weight:500}
+.mpace .row .main{min-width:0}.mpace .row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:380px){.mpace .rt.mp{gap:8px}.mpace .rt.mp .v{font-size:12.5px}.mpace .rt.mp .s{font-size:10px}.mpace .row{gap:7px;padding:10px 10px}}
+.go-mgr{display:block;width:100%;margin:10px 0 4px;border:1px solid var(--cardLine);background:var(--card);border-radius:12px;padding:12px;font-family:inherit;font-weight:700;font-size:14px;color:var(--navy);cursor:pointer}
 </style>
 </head>
 <body>
@@ -612,20 +618,21 @@ function bossHome(){
   <div class="kstrip">${ORDER.map(n=>D.kpi.find(k=>k.name===n)).filter(Boolean).map(k=>{const df=k.rate-M.baseRate;return `<a class="ks-i" href="#kpi-${k.name}" data-kj="${k.name}"><span>${k.name}</span><b>${pct(k.rate)}</b><em class="${df>=0?'up':'dn'}">${df>=0?'▲':'▼'}${Math.abs(df*100).toFixed(1)}</em></a>`}).join('')}</div>
   <div class="sec-h"><h2>당월 KPI</h2><span class="hint">▲▼ 영업일 기준대비 · 적색점선 진도대비 · 월 아래 목표/실적</span></div>
   <div class="grid" style="gap:10px">${kp}</div>
-  ${touchSection()}
-  <div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="hint">현재실적 순 · 탭하면 매니저 화면</span></div>
-  <div class="card list">${ms2.map((x,i)=>`<div class="row" data-go-mgr="${esc(x.m.name)}">${tel(x.m.phone,x.m.name)}
-     <div class="main"><div class="nm">${esc(x.m.name)}</div></div>
-     <div class="rt mp"><div><div class="v">${manK(x.cur)}<small class="u">천원</small></div><div class="s">현재실적</div></div><div><div class="v">${f1(x.hw)}<small class="u">명</small></div><div class="s">환산인원</div></div></div>${CHEV}</div>`).join('')}</div>`;
+  ${touchSection()}`;
 }
 
+const prev3=x=>{const p=x.m.perf;return sum(p.slice(-4,-1).map(v=>v||0))/3;};
 function bossMgr(){
-  const xs=MGRS.map(mgrStat);
-  return `<div class="sec-h"><h2>매니저별 현황</h2><span class="chip-n">${xs.length}</span><span class="hint">금액 천원 · 카드를 누르면 매니저 화면으로</span></div>
-  <div class="grid g3">${xs.map(x=>{const pr=x.prev?(x.proj/x.prev-1):0;
-   return `<div class="card mcard" data-go-mgr="${esc(x.m.name)}"><div class="mh">${tel(x.m.phone,x.m.name)}<span class="n">${esc(x.m.name)}</span><span class="tag t-gy">${x.m.tenure}차월</span>
-     <span class="tag ${pr>=0?'t-up':'t-dn'}" style="margin-left:auto">전월비 ${pr>=0?'+':''}${Math.round(pr*100)}%</span></div>
-     <div class="mx">
+  const xs=MGRS.map(mgrStat).sort((a,b)=>b.cur-a.cur);
+  return `<div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="hint">현재실적 순 · 금액 천원 · 탭하면 상세</span></div>
+  <div class="card list mpace">${xs.map(x=>{const a3=prev3(x),r=a3?x.cur/a3:0;return `<div class="row" data-mc="${esc(x.m.name)}">${tel(x.m.phone,x.m.name)}
+     <div class="main"><div class="nm">${esc(x.m.name)}</div></div>
+     <div class="rt mp"><div><div class="v sub">${a3?f0(a3):'-'}</div><div class="s">3평실적</div></div><div><div class="v">${f0(x.cur)}</div><div class="s">현재실적</div></div><div><div class="v">${a3?Math.round(r*100)+'<small class="u">%</small>':'-'}</div><div class="s">3평比</div></div><div><div class="v">${f1(x.hw)}<small class="u">명</small></div><div class="s">환산인원</div></div></div>${CHEV}</div>`}).join('')}</div>`;
+}
+function mgrSheet(name){
+  const x=mgrStat(name); if(!x) return; const pr=x.prev?(x.proj/x.prev-1):0;
+  const head=`<div style="display:flex;align-items:center;gap:10px;padding-right:40px">${tel(x.m.phone,x.m.name)}<div style="font-family:var(--f-disp);font-size:20px">${esc(x.m.name)}</div><span class="tag ${pr>=0?'t-up':'t-dn'}" style="margin-left:auto">전월비 ${pr>=0?'+':''}${Math.round(pr*100)}%</span></div>`;
+  const body=`<div class="card mcard" style="cursor:default"><div class="mx">
       <div><span>체결실적</span><b>${manK(x.cur)}<small class="u">천원</small></b></div>
       <div><span>월말예상</span><b style="color:var(--orange)">${manK(x.proj)}<small class="u">천원</small></b></div>
       <div><span>예상구간 지급</span><b>${x.payCp.pay?f0(x.payCp.pay)+'<small class="u">천원</small>':'-'}</b></div>
@@ -636,9 +643,10 @@ function bossMgr(){
       <div><span>설계건수</span><b>${f0(x.m.designs)}</b></div>
       <div><span>담당지사 / 가동</span><b>${x.ags.length} / ${x.ags.filter(a=>a.ins[a.ins.length-1]>0).length}</b></div>
      </div>
-     <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--ink3)">체결실적 12월→11월 ${spark(x.m.perf.slice(0,-1),120,22)}</div>
-   </div>`;}).join('')}</div>
-  <div class="note">※ 체결실적 = 설계지원 체결실적(인보험限) · 월말예상 = 현재 ÷ 경과영업일 × 영업일수 · 환산인원 = 설계지원 설계사 체결실적 기준</div>`;
+     <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--ink3)">체결실적 12월→10월 ${spark(x.m.perf.slice(0,-1),120,22)}</div></div>
+   <button class="go-mgr" data-go-mgr="${esc(x.m.name)}">${esc(x.m.name)} 매니저 화면 보기 ›</button>
+   <div class="note">※ 체결실적 = 설계지원 체결실적(인보험限) · 월말예상 = 현재 ÷ 경과영업일 × 영업일수</div>`;
+  openSheet(head,body);
 }
 
 function agRows(list){
@@ -851,6 +859,8 @@ function bindIn(root){
   root.querySelectorAll('[data-pl]').forEach(e=>e.onclick=()=>plSheet(e.dataset.pl));
   root.querySelectorAll('[data-ag]').forEach(e=>e.onclick=()=>agSheet(e.dataset.ag));
   root.querySelectorAll('[data-tp]').forEach(e=>e.onclick=()=>tpSheet(e.dataset.tp));
+  root.querySelectorAll('[data-mc]').forEach(e=>e.onclick=()=>mgrSheet(e.dataset.mc));
+  root.querySelectorAll('.go-mgr[data-go-mgr]').forEach(e=>e.onclick=()=>{closeSheet();st.role='mgr';st.mgr=e.dataset.goMgr;st.tab='home';render();scrollTo(0,0)});
 }
 function bind(){
   document.querySelectorAll('[data-kj]').forEach(e=>e.onclick=ev=>{ev.preventDefault();const t=document.getElementById('kpi-'+e.dataset.kj);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});
