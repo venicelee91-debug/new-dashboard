@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
@@ -11,7 +11,7 @@
 <title>경기AM지점 현황관리</title>
 <style>
 /*FONTS*/
-:root{
+:root{color-scheme:light;
   /* 환산인원관리 앱 톤: 연회색 바탕 · 흰 카드 · 남색 중심, 주황은 근접/예상치 포인트만 */
   --navy:#1C3264; --navy2:#1C3264; --orange:#1C3264; --orange2:#4A64A0; --orangeSoft:#E9EDF6;
   --hot:#E8741C; --hotSoft:#FFF1E6; --red:#D8343A; --green:#1E9E55; --yellow:#FFF4CC;
@@ -23,18 +23,8 @@
   --f-body:"Pretendard Variable","Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --f-num:"Pretendard Variable","Pretendard","Noto Sans KR",sans-serif;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
-  --bg:#0F1422; --card:#171E30; --ink:#EEF1F7; --ink2:#AEB5C7; --ink3:#78819A; --line:#263049; --soft:#1D2539;
-  --navy:#9DB6EE; --navy2:#2E4A8A; --orange:#5B7BC4; --orange2:#7D97D3; --orangeSoft:#1F2A47; --hot:#F59A4E; --hotSoft:#3A2717;
-  --navySoft:#1F2A47; --redSoft:#3A1C20; --greenSoft:#163225; --yellow:#3A3218; --heroSub:rgba(255,255,255,.07);
-  --shadow:0 1px 2px rgba(0,0,0,.3);
-}}
-:root[data-theme="dark"]{color-scheme:dark;
-  --bg:#0F1422; --card:#171E30; --ink:#EEF1F7; --ink2:#AEB5C7; --ink3:#78819A; --line:#263049; --soft:#1D2539;
-  --navy:#9DB6EE; --navy2:#2E4A8A; --orange:#5B7BC4; --orange2:#7D97D3; --orangeSoft:#1F2A47; --hot:#F59A4E; --hotSoft:#3A2717;
-  --navySoft:#1F2A47; --redSoft:#3A1C20; --greenSoft:#163225; --yellow:#3A3218; --heroSub:rgba(255,255,255,.07);
-  --shadow:0 1px 2px rgba(0,0,0,.3);
-}
+
+
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14.5px;line-height:1.45;padding-bottom:84px}
@@ -276,8 +266,6 @@ small.u,.u-s{font-family:var(--f-num);font-size:.6em;font-weight:500;margin-left
 
 /* 흰 바탕 섹션 테두리 */
 :root{--cardLine:#DDE0E7}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cardLine:#2C3650}}
-:root[data-theme="dark"]{--cardLine:#2C3650}
 .card,.kv div,.dz,.search,.tabs button:not(.on),.pills button:not(.on),select.sm{border:1px solid var(--cardLine)}
 .dz.ok,.dz.go,.dz.no,.dz.sm{border-top:1px solid var(--cardLine);border-right:1px solid var(--cardLine);border-bottom:1px solid var(--cardLine)}
 
@@ -334,6 +322,8 @@ body{letter-spacing:-.01em;font-weight:400}
 /* 숫자: 왼쪽(타겟DB) 앱처럼 자연 폭 + 한 단계 가벼운 굵기 */
 .krow .kh .kv0,.ks2 .big,.kpi .k-v,.hero .big,.pay .cur .v,.sum .v,.prof .st b,.row .rt .v,.kv div b,.krow .ks div b,.mcard .mx b,.lb .t{font-weight:600}
 .row .rt .v{font-variant-numeric:tabular-nums}
+.krow .kh .kv0{font-family:var(--f-disp);font-weight:400;letter-spacing:-.01em}
+.krow .kh .kv0 small{font-family:var(--f-body);font-weight:500}
 </style>
 </head>
 <body>
@@ -342,7 +332,6 @@ body{letter-spacing:-.01em;font-weight:400}
   <div class="role">
     <div class="seg"><button id="rBoss" class="on">지점장</button><button id="rMgr">매니저</button></div>
     <select class="mgr-sel" id="mgrSel" style="display:none"></select>
-    <button class="theme-btn" id="thBtn" title="라이트/다크 전환" aria-label="라이트/다크 전환"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 13.2A9 9 0 1 1 10.8 3a7 7 0 0 0 10.2 10.2z"/></svg></button>
   </div>
 </div></header>
 <main class="wrap">
@@ -440,7 +429,7 @@ function mgrStat(name){
 
 /* ---------- 상태 ---------- */
 const st={role:'boss',mgr:MGRS[0],tab:'home',q:'',f:'all',sort:'cur',agMgr:'all'};
-try{const s=JSON.parse(localStorage.getItem('gg-org-app')||'{}'); if(MGRS.includes(s.mgr))st.mgr=s.mgr; if(s.theme)document.documentElement.dataset.theme=s.theme;}catch(e){}
+try{const s=JSON.parse(localStorage.getItem('gg-org-app')||'{}'); if(MGRS.includes(s.mgr))st.mgr=s.mgr; }catch(e){}
 const save=()=>{try{localStorage.setItem('gg-org-app',JSON.stringify({role:st.role,mgr:st.mgr,theme:document.documentElement.dataset.theme||''}))}catch(e){}};
 
 const IC={
@@ -749,7 +738,6 @@ $('#mgrSel').innerHTML=MGRS.map(m=>`<option>${m}</option>`).join('');
 $('#mgrSel').onchange=e=>{st.mgr=e.target.value;st.f='all';st.q='';render()};
 $('#rBoss').onclick=()=>{st.role='boss';st.tab='home';st.f='all';render()};
 $('#rMgr').onclick=()=>{st.role='mgr';st.tab='home';st.f='all';render()};
-$('#thBtn').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';save()};
 render();
 let _rz,_lw=innerWidth;addEventListener('resize',()=>{clearTimeout(_rz);_rz=setTimeout(()=>{if(Math.abs(innerWidth-_lw)>40){_lw=innerWidth;if(!$('#sheet').classList.contains('on'))render();}},200)});
 </script>
