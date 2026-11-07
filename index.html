@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 18:10 KST">
+<meta name="build-time" content="2026-11-07 18:31 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -332,7 +332,7 @@ body{letter-spacing:-.01em;font-weight:400}
 /* 진도 줄: 헤더 밖, 본문 맨 위 얇은 줄 */
 .top-in{padding-top:12px!important;padding-bottom:12px!important}
 .tline{flex-wrap:nowrap}
-.subline{font-size:12.5px;color:var(--ink2);text-align:center;position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--toph,60px));z-index:18;background:var(--bg);margin:-16px -16px 10px;padding:7px 16px}
+.subline{font-size:12.5px;color:var(--ink2);text-align:center;position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--toph,60px) - 1px);z-index:18;background:var(--bg);box-shadow:0 -8px 0 var(--bg);margin:-16px -16px 10px;padding:7px 16px}
 .subline b{font-weight:700;color:var(--navy)}
 .subline::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--navy);opacity:.5;margin-right:7px;vertical-align:2px}
 @media (max-width:440px){.top-in{flex-wrap:nowrap!important}body.m-mgr .top-in{flex-wrap:wrap!important;row-gap:8px}.top h1{font-size:15.5px!important}.cdate{font-size:10.5px;padding:2px 6px 1px}.seg button{padding:6px 8px!important;font-size:11.5px!important}}
@@ -377,6 +377,21 @@ body{letter-spacing:-.01em;font-weight:400}
 .ks-i em.dn{color:var(--red)} .ks-i em.up{color:var(--green)}
 @media (max-width:380px){.ks-i b{font-size:14px}.ks-i span{font-size:11px}}
 .krow{scroll-margin-top:calc(var(--toph,60px) + 44px)}
+
+/* 조직 터치 포인트 */
+.tp-g{margin-bottom:12px}
+.tp-h{font-size:13px;font-weight:700;color:var(--ink2);margin:0 2px 7px;display:flex;align-items:center;gap:7px}
+.tp-h::before{content:"";width:4px;height:13px;border-radius:2px;background:var(--navy)}
+.tp-dn .tp-h::before{background:var(--red)} .tp-act .tp-h::before{background:var(--ink3)}
+.tp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.tp-t{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--card);border:1px solid var(--cardLine);border-radius:12px;padding:11px 11px 10px;cursor:pointer;min-width:0}
+.tp-t b{font-size:22px;font-weight:700;color:var(--navy);letter-spacing:-.02em;line-height:1.1}
+.tp-dn .tp-t b{color:var(--red)} .tp-act .tp-t b{color:var(--ink)}
+.tp-t b small{font-size:12px;font-weight:500;margin-left:2px;color:var(--ink2)}
+.tp-t .nm{font-size:12.5px;font-weight:700;color:var(--ink);word-break:keep-all;line-height:1.3}
+.tp-t .cr{font-size:10.5px;color:var(--ink3);word-break:keep-all;line-height:1.35}
+@media (max-width:380px){.tp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:900px){.tp-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -524,6 +539,36 @@ function render(){
   $('#view').innerHTML=V[st.tab](); bind(); save();
 }
 
+/* ================= 조직 터치 포인트 ================= */
+const avgPrev3=a=>sum(a.slice(-3))/3;
+const TP=(()=>{
+  const P=PL, A=D.agencies.filter(a=>sum(a.ins)!==0), n=D.agMonths.length;
+  const ac=a=>a.ins[n-1]||0, ap=a=>a.ins.slice(n-4,n-1);
+  const L=[
+   {g:'up',id:'n5',nm:'5만 근접자',cr:'당월 2만~5만 미만',u:'명',k:'p',list:P.filter(p=>p.cur>=20&&p.cur<50),sort:p=>-p.cur},
+   {g:'up',id:'n20',nm:'20만 근접자',cr:'당월 15만~20만 미만',u:'명',k:'p',list:P.filter(p=>p.cur>=150&&p.cur<200),sort:p=>-p.cur},
+   {g:'up',id:'nag',nm:'가동근접 지사',cr:'당월 20만~30만 미만',u:'곳',k:'a',list:A.filter(a=>ac(a)>=200&&ac(a)<300),sort:a=>-ac(a)},
+   {g:'dn',id:'d5',nm:'5만 유지 이탈',cr:'직전 3개월 연속 5만↑ · 당월 5만 미만',u:'명',k:'p',list:P.filter(p=>p.m.slice(-3).every(x=>x>=50)&&p.cur<50),sort:p=>-avg3(p.m)},
+   {g:'dn',id:'d20',nm:'20만 유지 이탈',cr:'직전 3개월 연속 20만↑ · 당월 20만 미만',u:'명',k:'p',list:P.filter(p=>p.m.slice(-3).every(x=>x>=200)&&p.cur<200),sort:p=>-avg3(p.m)},
+   {g:'dn',id:'lag',nm:'전월유실적·당월무실적 지사',cr:'전월 실적 있음 · 당월 0',u:'곳',k:'a',list:A.filter(a=>a.ins[n-2]>0&&!(ac(a)>0)),sort:a=>-a.ins[n-2]},
+   {g:'dn',id:'d30',nm:'30만 유지 이탈 지사',cr:'직전 3개월 연속 30만↑ · 당월 30만 미만',u:'곳',k:'a',list:A.filter(a=>ap(a).every(x=>x>=300)&&ac(a)<300),sort:a=>-avgPrev3(ap(a))},
+   {g:'dn',id:'m50',nm:'3개월평균 대비 -50만 지사',cr:'당월 − 직전 3개월 평균 ≤ -50만',u:'곳',k:'a',list:A.filter(a=>ac(a)-avgPrev3(ap(a))<=-500),sort:a=>ac(a)-avgPrev3(ap(a))},
+   {g:'act',id:'nz',nm:'설계인원 무실적자',cr:'당월 설계지원 받음 · 당월 실적 0',u:'명',k:'p',list:P.filter(p=>p.hwx&&p.hwx.dz>0&&!(p.cur>0)),sort:p=>-(p.hwx.dz||0)},
+  ];
+  L.forEach(x=>x.list.sort((a,b)=>x.sort(a)-x.sort(b)));
+  return L;
+})();
+function touchSection(){
+  const G=[['up','지금 밀면 올라오는 곳'],['dn','지켜야 할 곳'],['act','활동 점검']];
+  return `<div class="sec-h"><h2>조직 터치 포인트</h2><span class="hint">누르면 명단 · 금액 천원</span></div>`+G.map(([g,t])=>`<div class="tp-g tp-${g}"><div class="tp-h">${t}</div><div class="tp-grid">${TP.filter(x=>x.g===g).map(x=>`<button class="tp-t" data-tp="${x.id}"><b>${f0(x.list.length)}<small>${x.u}</small></b><span class="nm">${x.nm}</span><span class="cr">${x.cr}</span></button>`).join('')}</div></div>`).join('');
+}
+function tpSheet(id){
+  const x=TP.find(t=>t.id===id); if(!x) return; const n=D.agMonths.length;
+  const head=`<div style="padding-right:40px"><div style="font-family:var(--f-disp);font-size:19px">${x.nm} <span style="font-family:var(--f-body);font-weight:700;color:var(--navy)">${f0(x.list.length)}${x.u}</span></div><div style="font-size:12px;color:var(--ink3);margin-top:2px">${x.cr}</div></div>`;
+  const rows=x.k==='p'?x.list.slice(0,300).map(p=>`<div class="row" data-pl="${p.code}">${tel(p.tel,p.name)}<div class="main"><div class="nm">${esc(p.name)}</div><div class="meta">${esc(p.ag)} · ${esc(mgrOf(p))}${x.id==='nz'?` · 설계 ${p.hwx.dz}건`:` · 8~10월 ${p.m.slice(-3).map(v=>f0(v)).join('/')}`}</div></div><div class="rt"><div class="v">${f0(p.cur)}</div><div class="s">당월</div></div>${CHEV}</div>`).join('')
+    : x.list.map(a=>{const c=a.ins[n-1]||0,av=avgPrev3(a.ins.slice(n-4,n-1));return `<div class="row" data-ag="${esc(a.name)}"><div class="main"><div class="nm">${esc(a.name)}</div><div class="meta">${esc(MGRS.includes(a.mgr)?a.mgr:'미배정')} · 10월 ${f0(a.ins[n-2])} · 3평 ${f0(av)}</div></div><div class="rt"><div class="v">${f0(c)}</div><div class="s">${x.id==='m50'?f0(c-av):'당월'}</div></div>${CHEV}</div>`}).join('');
+  openSheet(head,`<div class="card list">${rows||'<div class="empty">해당 없음</div>'}</div>${x.list.length>300?'<div class="note">상위 300명만 표시</div>':''}`);
+}
 /* ================= 지점장 ================= */
 function bossHome(){
   const H=D.hist.data, ms=D.hist.months;
@@ -557,13 +602,7 @@ function bossHome(){
   <div class="kstrip">${ORDER.map(n=>D.kpi.find(k=>k.name===n)).filter(Boolean).map(k=>{const df=k.rate-M.baseRate;return `<a class="ks-i" href="#kpi-${k.name}" data-kj="${k.name}"><span>${k.name}</span><b>${pct(k.rate)}</b><em class="${df>=0?'up':'dn'}">${df>=0?'▲':'▼'}${Math.abs(df*100).toFixed(1)}</em></a>`}).join('')}</div>
   <div class="sec-h"><h2>당월 KPI</h2><span class="hint">▲▼ 영업일 기준대비 · 적색점선 진도대비 · 월 아래 목표/실적</span></div>
   <div class="grid" style="gap:10px">${kp}</div>
-  <div class="card pad" style="margin-top:10px"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
-      <div class="kv">
-        <div><span>설계지원 환산인원</span><b>${f1(totalHw)}<small class="u">명</small></b></div>
-        <div><span>근접자 (5만·20만)</span><b style="color:var(--hot)">${totalNear}<small class="u">명</small></b></div>
-        <div><span>전월가동·당월미가동 지사</span><b style="color:var(--red)">${lapsed}<small class="u">곳</small></b></div>
-        <div><span>브릿지 대상 / 달성</span><b>${D.bridge.length} / ${D.bridge.filter(b=>b.ok==='달성').length}</b></div>
-      </div></div>
+  ${touchSection()}
   <div class="note">※ 월말예상 = 현재 실적 ÷ 경과영업일(${M.elapsed}일) × 당월 영업일수(${M.days}일). 월초에는 오차가 커요.</div>
   <div class="sec-h"><h2>매니저 체결실적 페이스</h2><span class="chip-n">${ms2.length}</span><span class="hint">월말예상 순 · 탭하면 매니저 화면</span></div>
   <div class="card list">${ms2.map((x,i)=>`<div class="row" data-go-mgr="${esc(x.m.name)}"><span class="rank ${i<3?'rk1':''}">${i+1}</span>${tel(x.m.phone,x.m.name)}
@@ -789,6 +828,7 @@ function agSheet(name){
 function bindIn(root){
   root.querySelectorAll('[data-pl]').forEach(e=>e.onclick=()=>plSheet(e.dataset.pl));
   root.querySelectorAll('[data-ag]').forEach(e=>e.onclick=()=>agSheet(e.dataset.ag));
+  root.querySelectorAll('[data-tp]').forEach(e=>e.onclick=()=>tpSheet(e.dataset.tp));
 }
 function bind(){
   document.querySelectorAll('[data-kj]').forEach(e=>e.onclick=ev=>{ev.preventDefault();const t=document.getElementById('kpi-'+e.dataset.kj);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});
