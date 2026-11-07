@@ -270,7 +270,7 @@ small.u,.u-s{font-family:var(--f-num);font-size:.6em;font-weight:500;margin-left
 .dz.ok,.dz.go,.dz.no,.dz.sm{border-top:1px solid var(--cardLine);border-right:1px solid var(--cardLine);border-bottom:1px solid var(--cardLine)}
 
 .ttl{min-width:0;flex:1 1 auto}
-html,body{overflow-x:hidden}
+html{overflow-x:hidden}body{overflow-x:clip}
 
 .tline{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
 .cdate{font-size:11px;color:var(--navy);background:var(--navySoft);border-radius:6px;padding:3px 7px 2px;white-space:nowrap;align-self:center;--tbg:var(--navySoft)}
@@ -331,7 +331,7 @@ body{letter-spacing:-.01em;font-weight:400}
 /* 진도 줄: 헤더 밖, 본문 맨 위 얇은 줄 */
 .top-in{padding-top:12px!important;padding-bottom:12px!important}
 .tline{flex-wrap:nowrap}
-.subline{font-size:12.5px;color:var(--ink2);margin:-2px 2px 12px;text-align:center}
+.subline{font-size:12.5px;color:var(--ink2);text-align:center;position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--toph,60px));z-index:18;background:var(--bg);margin:-16px -16px 10px;padding:7px 16px}
 .subline b{font-weight:700;color:var(--navy)}
 .subline::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--navy);opacity:.5;margin-right:7px;vertical-align:2px}
 @media (max-width:440px){.top-in{flex-wrap:nowrap!important}body.m-mgr .top-in{flex-wrap:wrap!important;row-gap:8px}.top h1{font-size:15.5px!important}.cdate{font-size:10.5px;padding:2px 6px 1px}.seg button{padding:6px 8px!important;font-size:11.5px!important}}
@@ -419,7 +419,7 @@ function lineChart(labels,vals,o={}){
   if(solidN>1) g+=`<path d="${area}" fill="url(#${id})"/><path d="${path(pts.slice(0,solidN))}" fill="none" stroke="var(--navy)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
   if(o.lastLive&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-dasharray="4 4"/>`;
   if(o.sub2&&o.rowCap){g+=`<text x="2" y="${H-18}" font-size="9.5" fill="var(--ink2)">${o.rowCap[0]}</text><text x="2" y="${H-4}" font-size="9.5" fill="var(--ink3)">${o.rowCap[1]}</text>`;}
-  if(o.base!=null&&n>0){const bx=X(n-1),by=Y(o.base),cy=Y(vals[n-1]);g+=`<g opacity=".6"><line x1="${bx-7}" x2="${bx+10}" y1="${by}" y2="${by}" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="${bx}" x2="${bx}" y1="${by}" y2="${cy}" stroke="var(--red)" stroke-width="1.2" stroke-dasharray="2 3"/></g><text x="${bx+12}" y="${by+3.5}" text-anchor="start" font-size="${(o.vfs||11.5)-1.5}" fill="var(--red)" opacity=".8">진도 ${o.baseFmt?o.baseFmt(o.base):o.base}</text>`;}
+  if(o.base!=null&&n>0){const bx=X(n-1),by=Y(o.base),cy=Y(vals[n-1]);g+=`<g opacity=".6"><line x1="${bx-7}" x2="${bx+10}" y1="${by}" y2="${by}" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="${bx}" x2="${bx}" y1="${by}" y2="${cy}" stroke="var(--red)" stroke-width="1.2" stroke-dasharray="2 3"/></g><text x="${bx+12}" y="${by+3.5}" text-anchor="start" font-size="${(o.vfs||11.5)-1.5}" fill="var(--red)" opacity=".8">기준 ${o.baseFmt?o.baseFmt(o.base):o.base}</text>`;}
   if(o.projVal!=null&&n>1){const px=X(n-1),py=Y(o.projVal);g+=`<g opacity=".5"><path d="M${pts[n-2][0].toFixed(1)},${pts[n-2][1].toFixed(1)} L${px.toFixed(1)},${py.toFixed(1)}" fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="5 4"/><circle cx="${px}" cy="${py}" r="4.5" fill="var(--card)" stroke="var(--red)" stroke-width="2"/></g><text x="${px}" y="${py-9}" text-anchor="middle" font-size="${(o.vfs||11.5)-1}" fill="var(--red)" opacity=".7">예상 ${f0(o.projVal)}</text>`;}
   if(o.lastHot&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--hot)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
   pts.forEach((p,i)=>{const hot=o.lastHot&&i===n-1, live=o.lastLive&&i===n-1;
@@ -475,7 +475,7 @@ const TABS={boss:[['home','현황',IC.home],['mgr','매니저',IC.mgr],['ag','�
 
 function render(){
   $('#rBoss').classList.toggle('on',st.role==='boss'); $('#rMgr').classList.toggle('on',st.role==='mgr');
-  document.body.classList.toggle('m-mgr',st.role==='mgr');$('#mgrSel').style.display=st.role==='mgr'?'':'none'; $('#mgrSel').value=st.mgr;
+  document.body.classList.toggle('m-mgr',st.role==='mgr');requestAnimationFrame(setTopH);$('#mgrSel').style.display=st.role==='mgr'?'':'none'; $('#mgrSel').value=st.mgr;
   {const d=new Date(M.date+'T00:00:00');$('#cdate').textContent=`${d.getMonth()+1}월${d.getDate()}일마감`;
    $('#subt').innerHTML=`경과영업일 <b>${M.elapsed}/${M.days}</b> · 영업일기준 달성률 <b>${Math.round(M.baseRate*100)}%</b>`;}
   const t=TABS[st.role]; if(!t.find(x=>x[0]===st.tab)) st.tab='home';
@@ -767,7 +767,9 @@ $('#mgrSel').innerHTML=MGRS.map(m=>`<option>${m}</option>`).join('');
 $('#mgrSel').onchange=e=>{st.mgr=e.target.value;st.f='all';st.q='';render()};
 $('#rBoss').onclick=()=>{st.role='boss';st.tab='home';st.f='all';render()};
 $('#rMgr').onclick=()=>{st.role='mgr';st.tab='home';st.f='all';render()};
-render();
+const setTopH=()=>{try{document.documentElement.style.setProperty('--toph',document.querySelector('.top').offsetHeight+'px')}catch(e){}};
+addEventListener('resize',setTopH);
+render();setTopH();
 let _rz,_lw=innerWidth;addEventListener('resize',()=>{clearTimeout(_rz);_rz=setTimeout(()=>{if(Math.abs(innerWidth-_lw)>40){_lw=innerWidth;if(!$('#sheet').classList.contains('on'))render();}},200)});
 </script>
 </body>
