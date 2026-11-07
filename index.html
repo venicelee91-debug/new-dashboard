@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 15:49 KST">
+<meta name="build-time" content="2026-11-07 15:54 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,9 +40,9 @@
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14.5px;line-height:1.45;padding-bottom:84px}
 button{font-family:inherit;color:inherit}
-.num{font-family:var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.num{font-family:var(--f-num);font-variant-numeric:normal;letter-spacing:-.01em}
 .disp{font-family:var(--f-body);font-weight:600;letter-spacing:-.02em}
-.big-n{font-family:var(--f-body);font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.big-n{font-family:var(--f-body);font-weight:600;letter-spacing:-.03em;font-variant-numeric:normal}
 
 /* header — 흰 바탕 · 남색 텍스트 */
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--card);color:var(--ink);border-bottom:1px solid var(--line)}
@@ -153,7 +153,7 @@ select.sm{border:1px solid var(--line);background:var(--card);color:var(--ink);b
 .pay .cur .v{font-family:var(--f-num);font-weight:700;letter-spacing:-.01em;font-size:30px;line-height:1}
 .pay .cur .u{font-size:13px;color:var(--ink3);font-weight:600}
 .ladder{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;margin-top:14px}
-.lb{position:relative;background:var(--soft);border:2px solid transparent;border-radius:6px;padding:8px 4px 7px;text-align:center;font-variant-numeric:tabular-nums}
+.lb{position:relative;background:var(--soft);border:2px solid transparent;border-radius:6px;padding:8px 4px 7px;text-align:center;font-variant-numeric:normal}
 .lb .t{font-size:12.5px;font-weight:600;color:var(--ink3);line-height:1.2}
 .lb .p{font-size:11.5px;color:var(--ink3);margin-top:2px}
 .lb.hit{background:var(--card);border:2px solid var(--navy)}
@@ -221,7 +221,7 @@ select.sm{border:1px solid var(--line);background:var(--card);color:var(--ink);b
 b,strong{font-weight:600}
 body{font-weight:400}
 .vchart{width:100%;height:auto;display:block;margin-top:6px}
-.lchart{width:100%;height:auto;display:block;margin-top:4px;overflow:visible;font-variant-numeric:tabular-nums}
+.lchart{width:100%;height:auto;display:block;margin-top:4px;overflow:visible;font-variant-numeric:normal}
 .vchart text{font-family:var(--f-body);fill:var(--ink3);font-size:10px}
 .vchart .lbl{fill:var(--ink2);font-weight:600;font-size:10px}
 .vchart .lbl.hit{fill:var(--navy)}
@@ -331,6 +331,10 @@ body{letter-spacing:-.01em;font-weight:400}
  .prof .st div b{font-size:17px}
 }
 .kv4 div span{word-break:keep-all;font-size:11.5px}
+
+/* 숫자: 왼쪽(타겟DB) 앱처럼 자연 폭 + 한 단계 가벼운 굵기 */
+.krow .kh .kv0,.ks2 .big,.kpi .k-v,.hero .big,.pay .cur .v,.sum .v,.prof .st b,.row .rt .v,.kv div b,.krow .ks div b,.mcard .mx b,.lb .t{font-weight:600}
+.row .rt .v{font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -403,12 +407,12 @@ function lineChart(labels,vals,o={}){
   if(o.lastHot&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--hot)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
   pts.forEach((p,i)=>{const hot=o.lastHot&&i===n-1, live=o.lastLive&&i===n-1;
     g+=live?`<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="var(--navy)" stroke="var(--card)" stroke-width="2"/>`:hot?`<circle cx="${p[0]}" cy="${p[1]}" r="6.5" fill="var(--hot)"/>`:`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--card)" stroke="var(--navy)" stroke-width="2.5"/>`;
-    g+=live&&o.liveLeft?`<text x="${p[0]-10}" y="${p[1]+4}" text-anchor="end" font-size="${o.vfs||11.5}" font-weight="700" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="var(--navy)">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`:`<text x="${p[0]}" y="${p[1]-11}" text-anchor="middle" font-size="${o.vfs||11.5}" font-weight="700" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':'var(--ink)'}">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`;
+    g+=live&&o.liveLeft?`<text x="${p[0]-10}" y="${p[1]+4}" text-anchor="end" font-size="${o.vfs||11.5}" font-weight="600" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="var(--navy)">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`:`<text x="${p[0]}" y="${p[1]-11}" text-anchor="middle" font-size="${o.vfs||11.5}" font-weight="600" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':'var(--ink)'}">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`;
     if(o.sub&&o.sub[i]&&o.subAxis) g+=`<text x="${p[0]}" y="${o.sub2?H-18:H-4}" text-anchor="middle" font-size="10" font-weight="500" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':(o.subCol&&o.subCol[i])||'var(--ink2)'}">${o.sub[i]}</text>`;
     else if(o.sub&&o.sub[i]) g+=`<text x="${p[0]}" y="${p[1]+(o.subDy||19)}" text-anchor="middle" font-size="11" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':'var(--ink2)'}">${o.sub[i]}</text>`;
     if(o.sub2&&o.sub2[i]) g+=`<text x="${p[0]}" y="${H-4}" text-anchor="middle" font-size="10" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="${o.sub2Col||'var(--ink3)'}" font-weight="700">${o.sub2[i]}</text>`;
     g+=`<text x="${p[0]}" y="${o.sub2?H-33:o.subAxis?H-19:H-10}" text-anchor="middle" font-size="11.5" fill="var(--ink3)">${labels[i]}</text>`;});
-  if(o.curVal!=null){const cx=X(n-1),cy=Y(o.curVal);g+=`<line x1="${cx}" x2="${cx}" y1="${Y(vals[n-1])+7}" y2="${cy-6}" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="2 3"/><circle cx="${cx}" cy="${cy}" r="5.5" fill="var(--navy)" stroke="var(--card)" stroke-width="2"/><text x="${cx-9}" y="${cy+4}" text-anchor="end" font-size="${o.vfs||11.5}" font-weight="700" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="var(--navy)">현재 ${f0(o.curVal)}</text>`;}
+  if(o.curVal!=null){const cx=X(n-1),cy=Y(o.curVal);g+=`<line x1="${cx}" x2="${cx}" y1="${Y(vals[n-1])+7}" y2="${cy-6}" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="2 3"/><circle cx="${cx}" cy="${cy}" r="5.5" fill="var(--navy)" stroke="var(--card)" stroke-width="2"/><text x="${cx-9}" y="${cy+4}" text-anchor="end" font-size="${o.vfs||11.5}" font-weight="600" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="var(--navy)">현재 ${f0(o.curVal)}</text>`;}
   const lg=o.legend?`<div class="legend" style="margin:2px 0 0"><span><i style="background:var(--navy);height:3px;vertical-align:3px"></i>${o.legend[0]}</span>${o.ref?`<span><i style="background:none;border-top:2px dashed var(--ink3);height:0;vertical-align:3px"></i>${o.legend[1]}</span>`:''}${o.lastHot?`<span><i style="background:var(--hot);border-radius:50%"></i>${o.legend[2]}</span>`:''}</div>`:'';
   return `<svg class="lchart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||'실적 추이')}" style="font-family:var(--f-body)">${g}</svg>${lg}`;
 }
