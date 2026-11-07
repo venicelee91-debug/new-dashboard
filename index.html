@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 16:02 KST">
+<meta name="build-time" content="2026-11-07 16:06 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -328,17 +328,28 @@ body{letter-spacing:-.01em;font-weight:400}
 
 /* 헤더 좌우 여백: 본문 '당월 KPI' 시작선(18px)에 맞춤 */
 .top-in{padding-left:max(18px,env(safe-area-inset-left,0px))!important;padding-right:max(16px,env(safe-area-inset-right,0px))!important}
+
+/* 진도 줄: 헤더 밖, 본문 맨 위 얇은 줄 */
+.top-in{padding-top:12px!important;padding-bottom:12px!important}
+.tline{flex-wrap:nowrap}
+.subline{font-size:12.5px;color:var(--ink2);margin:-2px 2px 12px}
+.subline b{font-weight:700;color:var(--navy)}
+.subline::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--navy);opacity:.5;margin-right:7px;vertical-align:2px}
+@media (max-width:440px){.top-in{flex-wrap:nowrap!important}body.m-mgr .top-in{flex-wrap:wrap!important;row-gap:8px}.top h1{font-size:15.5px!important}.cdate{font-size:10.5px;padding:2px 6px 1px}.seg button{padding:6px 8px!important;font-size:11.5px!important}}
+@media (max-width:360px){.cdate{display:none}}
+.ttl{min-width:0}
 </style>
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <div class="ttl"><div class="tline"><h1>경기AM지점 현황관리</h1><span class="cdate" id="cdate"></span></div><div class="sub" id="subt"></div></div>
+  <div class="ttl"><div class="tline"><h1>경기AM지점 현황관리</h1><span class="cdate" id="cdate"></span></div></div>
   <div class="role">
     <div class="seg"><button id="rBoss" class="on">지점장</button><button id="rMgr">매니저</button></div>
     <select class="mgr-sel" id="mgrSel" style="display:none"></select>
   </div>
 </div></header>
 <main class="wrap">
+  <div class="subline" id="subt"></div>
   <nav class="tabs main" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -450,7 +461,7 @@ const TABS={boss:[['home','현황',IC.home],['mgr','매니저',IC.mgr],['ag','�
 
 function render(){
   $('#rBoss').classList.toggle('on',st.role==='boss'); $('#rMgr').classList.toggle('on',st.role==='mgr');
-  $('#mgrSel').style.display=st.role==='mgr'?'':'none'; $('#mgrSel').value=st.mgr;
+  document.body.classList.toggle('m-mgr',st.role==='mgr');$('#mgrSel').style.display=st.role==='mgr'?'':'none'; $('#mgrSel').value=st.mgr;
   {const d=new Date(M.date+'T00:00:00');$('#cdate').textContent=`${d.getMonth()+1}월${d.getDate()}일마감`;
    $('#subt').innerHTML=`경과영업일 <b>${M.elapsed}/${M.days}</b> · 영업일기준 달성률 <b>${Math.round(M.baseRate*100)}%</b>`;}
   const t=TABS[st.role]; if(!t.find(x=>x[0]===st.tab)) st.tab='home';
