@@ -130,12 +130,19 @@ print(len(D['planners']),len(D['agencies']),len(D['designs']),len(D['bridge']),s
 import os
 HIST=sys.argv[2] if len(sys.argv)>2 else 'history.json'
 hist=json.load(open(HIST)) if os.path.exists(HIST) else {}
-today=D['meta']['date']
+today=sys.argv[3] if len(sys.argv)>3 else D['meta']['date']  # 3번째 인자: 마감일 수동 지정(엑셀 날짜가 틀렸을 때)
 snap={'kpi':{x['name']:x['actual'] for x in D['kpi']},
       'mgr':{m['name']:{'perf':m['perf'][-1] or 0} for m in D['managers']},
       'hw':{m['name']:sum(p['hwx']['hw'] for p in D['planners'] if p.get('hwx') and p['hwx']['mgr']==m['name']) for m in D['managers']},
       'ag':{a['name']:a['ins'][-1] for a in D['agencies']},
       'pl':{p['code']:[p['cur'],(p.get('hwx') or {}).get('amt',0)] for p in D['planners'] if p['cur'] or p.get('hwx')}}
+# 확장 스냅샷 (2026-11 추가): 설계사 설계·체결·환산·근접·브릿지 / 매니저 설계량·하이캡 / 지사 당월 가동·5만·20만
+_L=lambda a:(a or [0])[-1] or 0
+snap['plx']={p['code']:{'dz':h.get('dz') or 0,'cn':h.get('cn') or 0,'hw':h.get('hw') or 0,'near':h.get('near') or '','br':h.get('br') or '','brOk':h.get('brOk') or '','brLeft':h.get('brLeft') or 0}
+             for p in D['planners'] for h in [p.get('hwx') or {}] if h}
+for m in D['managers']:
+    snap['mgr'][m['name']].update({'designs':m.get('designs') or 0,'hicap':m.get('hicap')})
+snap['agx']={a['name']:{'part':_L(a.get('part')),'m5':_L(a.get('m5')),'m20':_L(a.get('m20')),'dz':_L(a.get('dz'))} for a in D['agencies']}
 # 최초 1회: 엑셀 '전일기준 당월KPI' 표로 전날 KPI 스냅샷 시드
 if not any(d<today for d in hist):
     import datetime as _dt
