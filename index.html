@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 12:22 KST">
+<meta name="build-time" content="2026-11-07 12:26 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,7 +67,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .bnav button{flex:1;border:0;background:none;font-size:11px;font-weight:600;color:var(--ink3);display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer}
 .bnav button svg{width:22px;height:22px}
 .bnav button.on{color:var(--navy)}
-@media (max-width:760px){.bnav{display:flex}.tabs.main{display:none}.top .sub{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.top h1{font-size:16px;white-space:nowrap}.top-in{gap:8px;padding:9px 12px}.seg button{padding:6px 9px;font-size:12px}.mgr-sel{padding:7px 22px 7px 10px;font-size:12px}}
+@media (max-width:760px){.bnav{display:flex}.tabs.main{display:none}.top .sub{font-size:11px;white-space:normal;word-break:keep-all}.top h1{font-size:16px;white-space:nowrap}.top-in{gap:8px;padding:9px 12px}.seg button{padding:6px 9px;font-size:12px}.mgr-sel{padding:7px 22px 7px 10px;font-size:12px}}
 @media (max-width:440px){.top-in{flex-wrap:wrap;row-gap:8px}.top h1{font-size:17px}}
 .badge-title{white-space:nowrap}
 
@@ -280,11 +280,14 @@ small.u,.u-s{font-family:var(--f-num);font-size:.6em;font-weight:500;margin-left
 :root[data-theme="dark"]{--cardLine:#2C3650}
 .card,.kv div,.dz,.search,.tabs button:not(.on),.pills button:not(.on),select.sm{border:1px solid var(--cardLine)}
 .dz.ok,.dz.go,.dz.no,.dz.sm{border-top:1px solid var(--cardLine);border-right:1px solid var(--cardLine);border-bottom:1px solid var(--cardLine)}
+
+.ttl{min-width:0;flex:1 1 auto}
+html,body{overflow-x:hidden}
 </style>
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <div><h1>경기AM지점 현황관리</h1><div class="sub" id="subt"></div></div>
+  <div class="ttl"><h1>경기AM지점 현황관리</h1><div class="sub" id="subt"></div></div>
   <div class="role">
     <div class="seg"><button id="rBoss" class="on">지점장</button><button id="rMgr">매니저</button></div>
     <select class="mgr-sel" id="mgrSel" style="display:none"></select>
@@ -395,7 +398,7 @@ const TABS={boss:[['home','현황',IC.home],['mgr','매니저',IC.mgr],['ag','�
 function render(){
   $('#rBoss').classList.toggle('on',st.role==='boss'); $('#rMgr').classList.toggle('on',st.role==='mgr');
   $('#mgrSel').style.display=st.role==='mgr'?'':'none'; $('#mgrSel').value=st.mgr;
-  {const d=new Date(M.date+'T00:00:00');$('#subt').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 마감기준 · 경과영업일 ${M.elapsed}일 · 영업일기준 달성률 ${Math.round(M.baseRate*100)}% · 단위 천원`;}
+  {const d=new Date(M.date+'T00:00:00');$('#subt').textContent=`${d.getMonth()+1}월${d.getDate()}일마감 · 경과영업일 ${M.elapsed}일 · 영업일기준 달성률 ${Math.round(M.baseRate*100)}% · 단위\u00A0천원`;}
   const t=TABS[st.role]; if(!t.find(x=>x[0]===st.tab)) st.tab='home';
   const btn=(x,b)=>`<button class="${st.tab===x[0]?'on':''}" data-tab="${x[0]}">${b?x[2]:''}${x[1]}</button>`;
   $('#tabs').innerHTML=t.map(x=>btn(x)).join(''); $('#bnav').innerHTML=t.map(x=>btn(x,1)).join('');
