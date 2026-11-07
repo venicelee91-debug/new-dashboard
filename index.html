@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 20:30 KST">
+<meta name="build-time" content="2026-11-07 20:34 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -467,13 +467,13 @@ body{letter-spacing:-.01em;font-weight:400}
 /* 표 머리줄 고정 (경과영업일 줄 아래) */
 .mt-h{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--toph,60px) + var(--subh,34px) - 2px);z-index:17;background:var(--bg);padding-top:8px!important;box-shadow:0 -6px 0 var(--bg)}
 
-/* 페이스 표 숫자 키움 */
-.mt-r .c,.mt-r .c-cur,.mt-r .c.on,.mt-r .c-d1,.mt-t .c,.mt-t .c-cur{font-size:14.2px!important}
-.mt-r .c.nm{font-size:14.5px!important}.mt-t .c.nm{font-size:13.5px!important}
-.mt-h,.mt-r{column-gap:7px}
+/* 페이스 표 숫자 키움 (--mtk: 숫자가 길어지면 자동 축소) */
+.mt-r .c,.mt-r .c-cur,.mt-r .c.on,.mt-r .c-d1,.mt-t .c,.mt-t .c-cur{font-size:calc(14.2px*var(--mtk,1))!important}
+.mt-r .c.nm{font-size:calc(14.5px*var(--mtk,1))!important}.mt-t .c.nm{font-size:calc(13.5px*var(--mtk,1))!important}
+.mt-h,.mt-r{column-gap:calc(7px*var(--mtk,1))}
 .mt-r .c .wn{padding:3px 3px;margin:0 -3px}
 .mt-t .c .wn{background:#FBDDDD}
-@media (max-width:380px){.mt-r .c,.mt-r .c-cur,.mt-r .c.on,.mt-r .c-d1,.mt-t .c,.mt-t .c-cur{font-size:11.5px!important}.mt-r .c.nm,.mt-t .c.nm{font-size:12px!important}.mt-h,.mt-r{column-gap:3px}.mt-r .c .wn{padding:2px 2px;margin:0 -2px}}
+@media (max-width:380px){.mt-r .c,.mt-r .c-cur,.mt-r .c.on,.mt-r .c-d1,.mt-t .c,.mt-t .c-cur{font-size:calc(11.5px*var(--mtk,1))!important}.mt-r .c.nm,.mt-t .c.nm{font-size:calc(12px*var(--mtk,1))!important}.mt-h,.mt-r{column-gap:calc(3px*var(--mtk,1))}.mt-r .c .wn{padding:2px 2px;margin:0 -2px}}
 </style>
 </head>
 <body>
@@ -624,8 +624,11 @@ function render(){
   $('#tabs').innerHTML=t.map(x=>btn(x)).join(''); $('#bnav').innerHTML=t.map(x=>btn(x,1)).join('');
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{st.tab=b.dataset.tab;st.q='';st.f='all';render();scrollTo(0,0)});
   const V=st.role==='boss'?{home:bossHome,mgr:bossMgr,ag:bossAg,br:()=>bridgeView(null)}:{home:mgrHome,hw:mgrHw,pl:mgrPl,br:()=>bridgeView(st.mgr)};
-  $('#view').innerHTML=V[st.tab](); bind(); save();
+  $('#view').innerHTML=V[st.tab](); bind(); save(); fitMt();
 }
+// 페이스 표: 한 줄이라도 칸을 넘치면 표 전체 글자를 같은 비율로 줄임
+function fitMt(){const mt=document.querySelector('.mt');if(!mt)return;let k=1;mt.style.setProperty('--mtk',1);const box=c=>{const g=document.createRange();g.selectNodeContents(c);return g.getBoundingClientRect();};const over=()=>[...mt.querySelectorAll('.mt-r')].some(r=>{if(r.scrollWidth>r.clientWidth+1)return true;const rb=r.getBoundingClientRect(),cs=[...r.children].map(box);if(cs[cs.length-1].right>rb.right-4)return true;for(let i=1;i<cs.length;i++){if(cs[i].left-cs[i-1].right<1)return true;}return false;});while(k>.62&&over()){k-=.03;mt.style.setProperty('--mtk',k.toFixed(2));}}
+try{document.fonts.ready.then(fitMt)}catch(e){}
 
 /* ================= 조직 터치 포인트 ================= */
 const avgPrev3=a=>sum(a.slice(-3))/3;
