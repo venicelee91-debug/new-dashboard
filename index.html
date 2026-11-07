@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 11:55 KST">
+<meta name="build-time" content="2026-11-07 12:22 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,7 +67,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .bnav button{flex:1;border:0;background:none;font-size:11px;font-weight:600;color:var(--ink3);display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer}
 .bnav button svg{width:22px;height:22px}
 .bnav button.on{color:var(--navy)}
-@media (max-width:760px){.bnav{display:flex}.tabs.main{display:none}.top .sub{display:none}.top h1{font-size:16px;white-space:nowrap}.top-in{gap:8px;padding:9px 12px}.seg button{padding:6px 9px;font-size:12px}.mgr-sel{padding:7px 22px 7px 10px;font-size:12px}}
+@media (max-width:760px){.bnav{display:flex}.tabs.main{display:none}.top .sub{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.top h1{font-size:16px;white-space:nowrap}.top-in{gap:8px;padding:9px 12px}.seg button{padding:6px 9px;font-size:12px}.mgr-sel{padding:7px 22px 7px 10px;font-size:12px}}
 @media (max-width:440px){.top-in{flex-wrap:wrap;row-gap:8px}.top h1{font-size:17px}}
 .badge-title{white-space:nowrap}
 
@@ -395,7 +395,7 @@ const TABS={boss:[['home','현황',IC.home],['mgr','매니저',IC.mgr],['ag','�
 function render(){
   $('#rBoss').classList.toggle('on',st.role==='boss'); $('#rMgr').classList.toggle('on',st.role==='mgr');
   $('#mgrSel').style.display=st.role==='mgr'?'':'none'; $('#mgrSel').value=st.mgr;
-  $('#subt').textContent=`${M.date.slice(5).replace('-','/')} 기준 · ${M.elapsed}/${M.days}영업일 · 진도 ${pct(M.baseRate)} · 금액 단위 천원`;
+  {const d=new Date(M.date+'T00:00:00');$('#subt').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 마감기준 · 경과영업일 ${M.elapsed}일 · 영업일기준 달성률 ${Math.round(M.baseRate*100)}% · 단위 천원`;}
   const t=TABS[st.role]; if(!t.find(x=>x[0]===st.tab)) st.tab='home';
   const btn=(x,b)=>`<button class="${st.tab===x[0]?'on':''}" data-tab="${x[0]}">${b?x[2]:''}${x[1]}</button>`;
   $('#tabs').innerHTML=t.map(x=>btn(x)).join(''); $('#bnav').innerHTML=t.map(x=>btn(x,1)).join('');
@@ -421,7 +421,7 @@ function bossHome(){
     const chart=lineChart(lab,val,{w:chartW()-4,h:124,T:24,B:42,L:30,R:42,fit:true,ref,sub,subAxis:true,curVal:k.actual,subCol:rt.map(r=>r>=1?'var(--navy)':'var(--red)'),vfs:narrow?11.5:12.5,lastHot:true,aria:k.name+' 월별 실적 추이'});
     return `<div class="card krow">
       <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
-        <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 진도 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
+        <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 영업일 기준대비 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
       <div class="kc">${chart}</div>
       <div class="ks">
         <div><span>목표</span><b>${f0(k.target)}</b></div>
@@ -439,9 +439,6 @@ function bossHome(){
   const totalHw=sum(ms2.map(x=>x.hw)), totalNear=sum(ms2.map(x=>x.near));
   const lapsed=D.agencies.filter(a=>{const n=a.ins.length;return a.ins[n-2]>0&&!(a.ins[n-1]>0)&&MGRS.includes(a.mgr)}).length;
   return `
-  <div class="datebar"><div class="d"><b>${dt.getMonth()+1}</b>월 <b>${dt.getDate()}</b>일 마감기준</div>
-    <div class="m">경과영업일 <b>${M.elapsed}</b>일 · 영업일기준 달성률 <b>${Math.round(M.baseRate*100)}%</b></div>
-    <div class="tr" title="영업일 진도 ${M.elapsed}/${M.days}"><i style="width:${M.baseRate*100}%"></i></div></div>
   <div class="sec-h"><h2>당월 KPI</h2><span class="hint">점선 목표 · 주황 월말예상 · 남색 현재실적 · 월 아래 % 달성률</span></div>
   <div class="grid" style="gap:10px">${kp}</div>
   <div class="card pad" style="margin-top:10px"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
