@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 20:34 KST">
+<meta name="build-time" content="2026-11-07 20:41 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -473,7 +473,26 @@ body{letter-spacing:-.01em;font-weight:400}
 .mt-h,.mt-r{column-gap:calc(7px*var(--mtk,1))}
 .mt-r .c .wn{padding:3px 3px;margin:0 -3px}
 .mt-t .c .wn{background:#FBDDDD}
-@media (max-width:380px){.mt-r .c,.mt-r .c-cur,.mt-r .c.on,.mt-r .c-d1,.mt-t .c,.mt-t .c-cur{font-size:calc(11.5px*var(--mtk,1))!important}.mt-r .c.nm,.mt-t .c.nm{font-size:calc(12px*var(--mtk,1))!important}.mt-h,.mt-r{column-gap:calc(3px*var(--mtk,1))}.mt-r .c .wn{padding:2px 2px;margin:0 -2px}}
+@media (max-width:380px){.mt-r .c .wn{padding:2px 2px;margin:0 -2px}}
+
+.mt-probe{position:absolute!important;left:0;right:0;visibility:hidden;pointer-events:none}
+.mt{position:relative}
+/* 폭 여유 확보: 줄 안쪽 여백·칸 간격 축소 */
+.mt-r{padding:0 10px!important}.mt-h{padding:0 10px 8px!important}
+.mt-h,.mt-r{column-gap:calc(5px*var(--mtk,1))!important}
+@media (max-width:380px){.mt-r{padding:0 6px!important}.mt-h{padding:0 6px 6px!important}.mt-h,.mt-r{column-gap:calc(2px*var(--mtk,1))!important}}
+
+@media (max-width:400px){.mt-h,.mt-r{grid-template-columns:max-content 1.3fr 1.15fr .8fr .7fr .8fr .9fr .8fr!important}.mt-r{padding:0 8px!important}.mt-h{padding:0 8px 6px!important}.mt-h,.mt-r{column-gap:calc(3px*var(--mtk,1))!important}}
+
+.mt-h,.mt-r{grid-template-columns:max-content 1.3fr 1.15fr .8fr .7fr .8fr .9fr .8fr!important}
+.mt-h .c.nm{min-width:0}
+
+.mt-r .c .wn{margin:0!important;padding:3px 3px}
+@media (max-width:400px){.mt-r .c .wn{padding:2px 2px}}
+
+/* 칸 폭 = 최대 자리수 비율 (3평·당월·D-1 6자, 3평比 4자, 하이캡 4자, 설계량 5자, 환산 4자) */
+.mt-h,.mt-r{grid-template-columns:var(--nmw,64px) 6fr 6fr 6fr 4.4fr 4fr 5fr 4fr!important;column-gap:6px!important}
+@media (max-width:400px){.mt-h,.mt-r{column-gap:4px!important}}
 </style>
 </head>
 <body>
@@ -627,8 +646,19 @@ function render(){
   $('#view').innerHTML=V[st.tab](); bind(); save(); fitMt();
 }
 // 페이스 표: 한 줄이라도 칸을 넘치면 표 전체 글자를 같은 비율로 줄임
-function fitMt(){const mt=document.querySelector('.mt');if(!mt)return;let k=1;mt.style.setProperty('--mtk',1);const box=c=>{const g=document.createRange();g.selectNodeContents(c);return g.getBoundingClientRect();};const over=()=>[...mt.querySelectorAll('.mt-r')].some(r=>{if(r.scrollWidth>r.clientWidth+1)return true;const rb=r.getBoundingClientRect(),cs=[...r.children].map(box);if(cs[cs.length-1].right>rb.right-4)return true;for(let i=1;i<cs.length;i++){if(cs[i].left-cs[i-1].right<1)return true;}return false;});while(k>.62&&over()){k-=.03;mt.style.setProperty('--mtk',k.toFixed(2));}}
-try{document.fonts.ready.then(fitMt)}catch(e){}
+function fitMt(){const mt=document.querySelector('.mt');if(!mt)return;const t=mt.querySelector('.mt-t');if(!t)return;
+  // 최대 자리수로 폭을 미리 잡아둠: 3평·당월 88,888 / D-1 +8,888 / 3평比 888% / 하이캡 88.8 / 설계량 8,888 / 환산 88.8
+  const pr=t.cloneNode(true);pr.classList.add('mt-probe');pr.setAttribute('aria-hidden','true');
+  const W={a3:'88,888',cur:'88,888',d1:'+8,888',r:'888<i>%</i>',hc:'88.8',dz:'8,888',hw:'88.8'};
+  pr.querySelectorAll('.c').forEach(c=>{const m=[...c.classList].find(x=>x.startsWith('c-'));if(m&&W[m.slice(2)]!=null)c.innerHTML=W[m.slice(2)];});
+  mt.appendChild(pr);
+  let k=1;mt.style.setProperty('--mtk',1);const box=c=>{const g=document.createRange();g.selectNodeContents(c);return g.getBoundingClientRect();};
+  const bad=r=>{if(r.scrollWidth>r.clientWidth+1)return true;const rb=r.getBoundingClientRect(),cs=[...r.children].map(box);if(cs[cs.length-1].right>rb.right-4)return true;for(let i=1;i<cs.length;i++){if(cs[i].left-cs[i-1].right<2)return true;}return false;};
+  const setNm=()=>{mt.style.setProperty('--nmw','max-content');let w=0;mt.querySelectorAll('.c.nm').forEach(c=>{w=Math.max(w,c.scrollWidth,box(c).width)});mt.style.setProperty('--nmw',Math.ceil(w+1)+'px');};
+  const over=()=>{setNm();return [...mt.querySelectorAll('.mt-r')].some(bad);};
+  while(k>.62&&over()){k-=.02;mt.style.setProperty('--mtk',k.toFixed(2));}
+  pr.remove();}
+try{document.fonts.ready.then(fitMt);document.fonts.addEventListener('loadingdone',()=>setTimeout(fitMt,30))}catch(e){}
 
 /* ================= 조직 터치 포인트 ================= */
 const avgPrev3=a=>sum(a.slice(-3))/3;
