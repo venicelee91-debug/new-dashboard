@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 12:36 KST">
+<meta name="build-time" content="2026-11-07 12:41 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -288,6 +288,13 @@ html,body{overflow-x:hidden}
 .cdate{font-size:11.5px;color:var(--ink3);font-weight:500;white-space:nowrap}
 .top .sub b{font-family:var(--f-num);color:var(--ink2);font-weight:700}
 #view>.sec-h:first-child{margin-top:0}
+
+.krow{padding:12px 16px 10px}
+.krow .ks2{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:6px;padding-top:8px;align-items:end}
+.krow .ks2 .rr{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.krow .ks2 .rr b.big{font-family:var(--f-num);font-size:24px;font-weight:700;color:var(--navy);line-height:1.1}
+.krow .ks2 .rr em{font-style:normal;font-family:var(--f-num);font-size:11.5px;color:var(--ink3);white-space:nowrap}
+@media (max-width:560px){.krow .ks2{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr) minmax(0,1.1fr);gap:6px}.krow .ks2 .rr b.big{font-size:20px}.krow .ks2 .rr{gap:0 4px;flex-wrap:nowrap}.krow .ks2 .rr em{font-size:10px;letter-spacing:-.02em}.krow .ks2 div b{font-size:14px}}
 </style>
 </head>
 <body>
@@ -432,14 +439,11 @@ function bossHome(){
       <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
         <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 영업일 기준대비 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
       <div class="kc">${chart}</div>
-      <div class="ks">
-        <div><span>목표</span><b>${f0(k.target)}</b></div>
-        <div><span>현재실적</span><b>${f0(k.actual)}</b></div>
+      <div class="ks ks2">
+        <div class="rt0"><span>달성률</span><div class="rr"><b class="big">${pct(k.rate)}</b><em>${f0(k.actual)} / ${f0(k.target)}</em></div></div>
+        <div><span>전일유입</span><b>+${f0(d1)}</b></div>
         <div class="${left>0?'left':'done'}"><span>목표까지 남음</span><b>${left>0?f0(left):'달성'}</b></div>
-        <div><span>달성률</span><b>${pct(k.rate)}</b></div>
       </div>
-      <div class="kp"><span>진도</span><div class="pbar"><i style="width:${Math.min(100,k.rate*100)}%"></i><b style="left:${M.baseRate*100}%"></b></div>
-        <span>월말예상 <b>${pct(proj)}</b> · 전일 +<b>${f0(d1)}</b></span></div>
     </div>`;};
   const kp=ORDER.map(n=>D.kpi.find(k=>k.name===n)).filter(Boolean).map(kpiRow).join('');
   const dt=new Date(M.date+'T00:00:00');
