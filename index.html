@@ -2,7 +2,7 @@
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 17:24 KST">
+<meta name="build-time" content="2026-11-07 17:30 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -420,14 +420,14 @@ function lineChart(labels,vals,o={}){
   if(solidN>1) g+=`<path d="${area}" fill="url(#${id})"/><path d="${path(pts.slice(0,solidN))}" fill="none" stroke="var(--navy)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
   if(o.lastLive&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-dasharray="4 4"/>`;
   if(o.sub2&&o.rowCap){g+=`<text x="2" y="${H-18}" font-size="9.5" fill="var(--ink2)">${o.rowCap[0]}</text><text x="2" y="${H-4}" font-size="9.5" fill="var(--ink3)">${o.rowCap[1]}</text>`;}
-  if(o.base!=null&&n>0){const bx=X(n-1),by=Y(o.base),cy=Y(vals[n-1]);g+=`<g opacity=".6"><line x1="${bx-7}" x2="${bx+10}" y1="${by}" y2="${by}" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="${bx}" x2="${bx}" y1="${by}" y2="${cy}" stroke="var(--red)" stroke-width="1.2" stroke-dasharray="2 3"/></g><text x="${bx+12}" y="${by+3.5}" text-anchor="start" font-size="${(o.vfs||11.5)-1.5}" fill="var(--red)" opacity=".8">기준 ${o.baseFmt?o.baseFmt(o.base):o.base}</text>`;}
+  if(o.base!=null&&n>0){const bx=X(n-1),by=Y(o.base),cy=Y(vals[n-1]);g+=`<g opacity=".6"><line x1="${bx-7}" x2="${bx+10}" y1="${by}" y2="${by}" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="${bx}" x2="${bx}" y1="${by}" y2="${cy}" stroke="var(--red)" stroke-width="1.2" stroke-dasharray="2 3"/></g>`;}
   if(o.projVal!=null&&n>1){const px=X(n-1),py=Y(o.projVal);g+=`<g opacity=".5"><path d="M${pts[n-2][0].toFixed(1)},${pts[n-2][1].toFixed(1)} L${px.toFixed(1)},${py.toFixed(1)}" fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="5 4"/><circle cx="${px}" cy="${py}" r="4.5" fill="var(--card)" stroke="var(--red)" stroke-width="2"/></g><text x="${px}" y="${py-9}" text-anchor="middle" font-size="${(o.vfs||11.5)-1}" fill="var(--red)" opacity=".7">예상 ${f0(o.projVal)}</text>`;}
   if(o.lastHot&&n>1) g+=`<path d="${path(pts.slice(n-2))}" fill="none" stroke="var(--hot)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
   // 칸 간격에 맞춰 글자 크기 자동 축소 (숫자가 길어져도 서로 겹치지 않게)
   const sp=n>1?(W-L-Rr)/(n-1):W, mlen=a=>Math.max(1,...(a||[]).map(x=>String(x||'').length));
   const fsSub=Math.max(7.5,Math.min(10,(sp-6)/(Math.max(mlen(o.sub),mlen(o.sub2))*0.6)));
   const fsVal=Math.max(8,Math.min(o.vfs||11.5,(sp-4)/(mlen(vals.map(v=>o.fmt?o.fmt(v):f0(v)))*0.62)));
-  pts.forEach((p,i)=>{const hot=o.lastHot&&i===n-1, live=o.lastLive&&i===n-1, ed=o.edge&&i===0, tx=ed?p[0]-o.edge:p[0], ta=ed?'start':'middle';
+  pts.forEach((p,i)=>{const hot=o.lastHot&&i===n-1, live=o.lastLive&&i===n-1, ed=o.edge&&i===0, er=o.edge&&i===n-1&&n>1, tx=ed?p[0]-o.edge:er?p[0]+o.edge:p[0], ta=ed?'start':er?'end':'middle';
     g+=live?`<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="var(--navy)" stroke="var(--card)" stroke-width="2"/>`:hot?`<circle cx="${p[0]}" cy="${p[1]}" r="6.5" fill="var(--hot)"/>`:`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--card)" stroke="var(--navy)" stroke-width="2.5"/>`;
     g+=live&&o.liveLeft?`<text x="${p[0]-10}" y="${p[1]+4}" text-anchor="end" font-size="${o.vfs||11.5}" font-weight="600" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="var(--navy)">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`:`<text x="${tx}" y="${p[1]-11}" text-anchor="${ta}" font-size="${fsVal}" font-weight="600" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':'var(--ink)'}">${o.fmt?o.fmt(vals[i]):f0(vals[i])}</text>`;
     if(o.sub&&o.sub[i]&&o.subAxis) g+=`<text x="${tx}" y="${o.sub2?H-18:H-4}" text-anchor="${ta}" font-size="${fsSub}" font-weight="500" font-family="Pretendard Variable,Pretendard,Noto Sans KR,sans-serif" fill="${hot?'var(--hot)':(o.subCol&&o.subCol[i])||'var(--ink2)'}">${o.sub[i]}</text>`;
@@ -506,7 +506,7 @@ function bossHome(){
     lab.push('11월');val.push(k.actual);ref.push(k.target);rt.push(k.rate);
     const pf=v=>(Math.round(v*1000)/10).toFixed(1)+'%';
     const rv=rt.map(r=>+r||0), sub=ref.map(v=>f0(v)), sub2=val.map(v=>f0(v));
-    const chart=lineChart(lab,rv,{w:chartW()-4,h:129,T:24,B:56,L:12,edge:8,sub2,sub2Col:'var(--navy)',R:58,fit:true,focus:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,base:M.baseRate,baseFmt:v=>Math.round(v*100)+'%',fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
+    const chart=lineChart(lab,rv,{w:chartW()-4,h:129,T:24,B:56,L:12,R:12,edge:8,sub2,sub2Col:'var(--navy)',fit:true,focus:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
     return `<div class="card krow">
       <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
         <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 영업일 기준대비 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
@@ -524,7 +524,7 @@ function bossHome(){
   const totalHw=sum(ms2.map(x=>x.hw)), totalNear=sum(ms2.map(x=>x.near));
   const lapsed=D.agencies.filter(a=>{const n=a.ins.length;return a.ins[n-2]>0&&!(a.ins[n-1]>0)&&MGRS.includes(a.mgr)}).length;
   return `
-  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">점선 100% · 적색 기준진도 · 월 아래 목표/실적</span></div>
+  <div class="sec-h"><h2>당월 KPI</h2><span class="hint">점선 100% · 월 아래 목표/실적</span></div>
   <div class="grid" style="gap:10px">${kp}</div>
   <div class="card pad" style="margin-top:10px"><div class="sec-h" style="margin-top:0"><h2>조직 터치 포인트</h2></div>
       <div class="kv">
