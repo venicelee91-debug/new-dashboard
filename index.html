@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="build-time" content="2026-11-07 15:17 KST">
+<meta name="build-time" content="2026-11-07 15:22 KST">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
 <meta name="theme-color" content="#F3F4F7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -482,7 +482,7 @@ function bossHome(){
     lab.push('11월');val.push(k.actual);ref.push(k.target);rt.push(k.rate);
     const pf=v=>(Math.round(v*1000)/10).toFixed(1)+'%';
     const rv=rt.map(r=>+r||0), sub=val.map(v=>f0(v)), sub2=ref.map(v=>f0(v));
-    const chart=lineChart(lab,rv,{w:chartW()-4,h:138,T:24,B:56,L:54,sub2,rowCap:['실적','목표'],R:58,fit:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,base:M.baseRate,baseFmt:v=>Math.round(v*100)+'%',fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
+    const chart=lineChart(lab,rv,{w:chartW()-4,h:138,T:24,B:56,L:30,sub2,R:58,fit:true,ref:rv.map(()=>1),sub,subAxis:true,lastLive:true,liveLeft:true,base:M.baseRate,baseFmt:v=>Math.round(v*100)+'%',fmt:pf,subCol:rv.map(()=>'var(--ink3)'),vfs:narrow?10.5:11.5,aria:k.name+' 월별 달성률 추이'});
     return `<div class="card krow">
       <div class="kh"><span class="kn">${k.name}</span><span class="kv0">${f0(k.actual)}<small>${unit}</small></span>
         <span class="tag ${diff>=0?'t-up':'t-dn'}">${diff>=0?'▲':'▼'} 영업일 기준대비 ${diff>=0?'+':''}${(diff*100).toFixed(1)}%p</span></div>
